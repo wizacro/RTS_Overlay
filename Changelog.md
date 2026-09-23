@@ -1,3 +1,7 @@
+# [2.15.0] - 2026.09.23
+* AoE2
+    * Add Viking Sagas content.
+
 # [2.14.0] - 2026.06.21
 * Web
     * Auto-resize is the default.
