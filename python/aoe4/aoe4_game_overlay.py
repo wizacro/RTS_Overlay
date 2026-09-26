@@ -1,12 +1,9 @@
 # AoE4 game overlay
 import os
 
-from PyQt5.QtWidgets import QComboBox, QApplication
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QApplication
 
-from common.useful_tools import widget_x_end, widget_y_end
-from common.rts_overlay import RTSGameOverlay, scale_list_int, PanelID
+from common.rts_overlay import RTSGameOverlay, scale_list_int
 from common.rts_overlay_images import RTSOverlayImages
 
 from aoe4.aoe4_settings import AoE4OverlaySettings
@@ -59,26 +56,17 @@ class AoE4GameOverlay(RTSGameOverlay):
             build_order_timer_step_starting_flag=False,
         )
 
-        # civilization selection
-        layout = self.settings.layout
-        color_default = layout.color_default
-        style_description = f'color: rgb({color_default[0]}, {color_default[1]}, {color_default[2]})'
-        flag_select_size = layout.configuration.flag_select_size
-
-        self.civilization_select = QComboBox(self)
-        self.civilization_select.activated.connect(self.update_build_order_display)
-        self.civilization_combo_ids = []  # corresponding IDs
-        for civ_name, letters_icon in aoe4_civilization_icon.items():
-            assert len(letters_icon) == 2
-            self.civilization_select.addItem(
-                QIcon(os.path.join(self.directory_game_pictures, 'civilization_flag', letters_icon[1])), letters_icon[0]
-            )
-            self.civilization_combo_ids.append(civ_name)
-        self.civilization_select.setIconSize(QSize(flag_select_size[0], flag_select_size[1]))
-        self.civilization_select.setStyleSheet(f'QWidget{{ {style_description} }};')
-        self.civilization_select.setToolTip('select civilization')
-        self.civilization_select.setFont(QFont(layout.font_police, layout.font_size))
-        self.civilization_select.adjustSize()
+        # civilization filter specification (used by the manager window)
+        self.faction_filter_specs = [
+            {
+                'key': 'civilization',
+                'tooltip': 'select civilization',
+                'items': [
+                    (civ_name, os.path.join(self.directory_game_pictures, 'civilization_flag', letters_icon[1]))
+                    for civ_name, letters_icon in aoe4_civilization_icon.items()
+                ],
+            }
+        ]
 
         self.update_panel_elements()  # update the current panel elements
 
@@ -91,62 +79,16 @@ class AoE4GameOverlay(RTSGameOverlay):
         """
         super().reload(update_settings=update_settings)
 
-        # civilization selection
-        layout = self.settings.layout
-        color_default = layout.color_default
-        style_description = f'color: rgb({color_default[0]}, {color_default[1]}, {color_default[2]})'
-        flag_select_size = layout.configuration.flag_select_size
-
-        self.civilization_select.setIconSize(QSize(flag_select_size[0], flag_select_size[1]))
-        self.civilization_select.setStyleSheet(f'QWidget{{ {style_description} }};')
-        self.civilization_select.setFont(QFont(layout.font_police, layout.font_size))
-        self.civilization_select.adjustSize()
-
         self.update_panel_elements()  # update the current panel elements
 
     def settings_scaling(self):
         """Apply the scaling on the settings."""
         super().settings_scaling()
-        assert 0 <= self.scaling_input_selected_id < len(self.scaling_input_combo_ids)
-        scaling = self.scaling_input_combo_ids[self.scaling_input_selected_id] / 100.0
+        scaling = self.unscaled_settings.layout.scaling / 100.0
 
         self.settings.layout.configuration.flag_select_size = scale_list_int(
             scaling, self.unscaled_settings.layout.configuration.flag_select_size
         )
-
-    def select_build_order_id(self, build_order_id: int = -1) -> bool:
-        """Select build order ID.
-
-        Parameters
-        ----------
-        build_order_id    ID of the build order, negative to select next build order.
-
-        Returns
-        -------
-        True if valid build order selection.
-        """
-        if self.selected_panel == PanelID.CONFIG:
-            if super().select_build_order_id(build_order_id):
-                civilization_id = self.civilization_select.currentIndex()
-                assert 0 <= civilization_id < len(self.civilization_combo_ids)
-                self.obtain_build_order_search(
-                    key_condition={'civilization': self.civilization_combo_ids[civilization_id]}
-                )
-                if build_order_id >= 0:  # directly select in case of clicking
-                    self.select_build_order(
-                        key_condition={
-                            'civilization': self.civilization_combo_ids[self.civilization_select.currentIndex()]
-                        }
-                    )
-                self.config_panel_layout()
-                return True
-        return False
-
-    def hide_elements(self):
-        """Hide elements."""
-        super().hide_elements()
-
-        self.civilization_select.hide()
 
     def get_age_image(self, age_id: int) -> str:
         """Get the image for a requested age.
@@ -169,75 +111,6 @@ class AoE4GameOverlay(RTSGameOverlay):
             return self.images.age_4
         else:
             return self.images.age_unknown
-
-    def update_build_order_display(self):
-        """Update the build order search matching display."""
-        civilization_id = self.civilization_select.currentIndex()
-        assert 0 <= civilization_id < len(self.civilization_combo_ids)
-        self.obtain_build_order_search(key_condition={'civilization': self.civilization_combo_ids[civilization_id]})
-        self.config_panel_layout()
-
-    def enter_key_actions(self):
-        """Actions performed when pressing the Enter key."""
-        if self.selected_panel == PanelID.CONFIG:
-            if self.build_order_search.hasFocus():
-                self.select_build_order(
-                    key_condition={'civilization': self.civilization_combo_ids[self.civilization_select.currentIndex()]}
-                )
-
-            self.config_panel_layout()  # update layout
-
-    def config_panel_layout(self):
-        """Layout of the configuration panel."""
-        super().config_panel_layout()
-        if self.selected_panel != PanelID.CONFIG:
-            return
-
-        # show elements
-        self.civilization_select.show()
-
-        layout = self.settings.layout
-        border_size = layout.border_size
-        horizontal_spacing = layout.horizontal_spacing
-        vertical_spacing = layout.vertical_spacing
-        action_button_size = layout.action_button_size
-
-        # next Y position
-        next_y = (
-            border_size
-            + max(action_button_size, self.font_size_input.height(), self.scaling_input.height())
-            + vertical_spacing
-        )
-
-        # build order selection
-        self.build_order_title.move(border_size, next_y)
-        next_x = border_size + self.build_order_title.width() + horizontal_spacing
-
-        # civilization selection
-        self.civilization_select.move(next_x, next_y)
-
-        if self.civilization_select.height() > self.build_order_title.height():
-            self.build_order_title.move(
-                self.build_order_title.x(), widget_y_end(self.civilization_select) - self.build_order_title.height()
-            )
-        next_y += max(self.build_order_title.height(), self.civilization_select.height()) + vertical_spacing
-
-        # build order search
-        self.build_order_search.move(border_size, next_y)
-        next_y += self.build_order_search.height() + vertical_spacing
-
-        if widget_x_end(self.build_order_search) > widget_x_end(self.civilization_select):
-            self.civilization_select.move(
-                widget_x_end(self.build_order_search) - self.civilization_select.width(), self.civilization_select.y()
-            )
-        elif widget_x_end(self.build_order_search) < widget_x_end(self.civilization_select):
-            self.build_order_search.resize(
-                widget_x_end(self.civilization_select) - self.build_order_search.x(), self.build_order_search.height()
-            )
-
-        self.build_order_selection.update_size_position(init_y=next_y)
-
-        self.config_panel_layout_resize_move()  # size and position
 
     def update_build_order(self):
         """Update the build order panel."""

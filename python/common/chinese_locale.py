@@ -14,7 +14,8 @@
 TRANSLATIONS = {
     # --- 主窗口（rts_overlay.py）---
     'Build order': '建造顺序',
-    'keywords or space': '关键词或空格',
+    'keywords or space': '关键词或空格',  # (legacy, kept for old settings compatibility)
+    'Filter build orders by keywords...': '输入关键词筛选建造顺序…',
     'Step: 0/0': '步骤: 0/0',
     'font size': '字体大小',
     'scaling of pictures, spacing...': '图片、间距等缩放',
@@ -104,6 +105,80 @@ TRANSLATIONS = {
     'No valid build order for this faction.': '当前阵营没有有效的建造顺序。',
     'Select build order with search bar.': '使用搜索栏选择建造顺序。',
     'No valid build order found with these keywords.': '未找到符合这些关键词的建造顺序。',
+
+    # --- R3 管理器窗口（manager_window.py）---
+    'RTS Overlay Manager': 'RTS Overlay 管理器',
+    '1. Import build orders': '① 导入建造顺序',
+    '2. Select and configure': '② 选择与配置',
+    '3. Show the overlay': '③ 开启悬浮窗',
+    'Help': '帮助',
+    'Import': '导入',
+    'Display': '展示',
+    'UI theme': '界面主题',
+    'Light': '浅色',
+    'Dark': '深色',
+    'Quit': '退出',
+    'Usage steps: (click any step to jump to the corresponding part)': '使用步骤：（每一步可以单击来转到对应部分）',
+    '4. Fix the overlay (in-game state)': '④ 固定悬浮窗',
+    'Game': '游戏',
+    'Find build orders': '查找流程',
+    'Existing build orders': '现有流程数量',
+    'Open build order website': '打开流程网站',
+    'Build order name (leave empty to use the clipboard build order name):':
+        '流程名称（留空则使用剪贴板里流程的名称）：',
+    'The build order is read from the clipboard; if the name field is empty, the name inside the build order is used.':
+        '流程内容从剪贴板读取；名称栏留空时，使用流程文件内部的名称。',
+    'Import from clipboard': '从剪贴板导入',
+    'Open build order folder': '打开建造顺序文件夹',
+    'Valid clipboard/pasted content is imported directly; otherwise a message is displayed.':
+        '剪贴板/粘贴内容格式正确则直接导入保存；否则弹窗提示，不影响现有文件。',
+    'Faction': '阵营',
+    'Search': '搜索',
+    'Select a build order': '选中一个流程',
+    'Rename': '重命名',
+    'New name:': '新名称：',
+    'Delete (to deprecation folder)': '删除（移入弃用区）',
+    'Delete': '删除',
+    'Build order file not found.': '未找到流程文件。',
+    'The build order file will be moved to the "弃用区" folder (not deleted). Continue?':
+        '将把该流程文件移动到"弃用区"文件夹（不会真正删除），确定继续吗？',
+    'Overlay': '悬浮窗',
+    'State': '状态',
+    'Show overlay': '开启悬浮窗',
+    'Hide overlay': '关闭悬浮窗',
+    'Move mode': '移动模式',
+    'Fixed mode': '固定模式',
+    'Fixed mode: no drag, buttons clickable, other areas click-through':
+        '固定模式：不可拖动，按钮可点击，其余区域穿透',
+    'Appearance': '外观',
+    'Background color': '背景色',
+    'Opacity': '不透明度',
+    'Font size': '字号',
+    'Scaling': '缩放',
+    'Display rows': '显示行数',
+    'Display control': '展示控制',
+    'Hotkeys': '快捷键',
+    'Open hotkeys configuration': '打开快捷键配置窗口',
+    'Global hotkeys work even while playing (no need to focus the overlay)':
+        '全局快捷键在游戏中也能使用（无需悬浮窗获得焦点）',
+    'Start/Stop timer': '开始/停止计时',
+    'Previous step': '上一步',
+    'Next step': '下一步',
+    'Reset timer': '归零',
+    'No build order selected.': '未选择建造顺序。',
+    'Click twice to hide': '连点两次隐藏悬浮窗',
+    'Click again to hide': '再点一次确认隐藏',
+    'HOW_TO_USE_TEXT':
+        '使用说明：\n\n'
+        '1. 导入建造顺序（"导入"标签页：从剪贴板导入，可先填流程名称）。\n'
+        '2. 在"展示"标签页选择建造顺序、调整悬浮窗外观（外观与展示控制默认折叠）。\n'
+        '3. 点"开启悬浮窗"，进入移动模式：整窗可拖动，可先点按钮测试流程。\n'
+        '4. 进游戏前把状态切到"固定模式"：不可拖动、按钮可点、其余区域点击穿透。\n'
+        '   游戏内也可以直接用全局快捷键推进步骤（见快捷键配置窗口）。\n\n'
+        '提示：流程列表右键可重命名或删除（删除=移入"弃用区"文件夹，不会真正删除）；\n'
+        '关闭管理器窗口即退出整个程序；最小化管理器不影响悬浮窗。',
+
+    # --- R3 悬浮窗（rts_overlay.py，'Step' 等动态键沿用上方既有条目）---
 }
 
 

@@ -257,6 +257,18 @@ class KeyboardMouseManagement:
                 print(f'Unknown mouse button name received ({name}) to get the timestamp.')
             return -1.0
 
+    def shutdown(self):
+        """Remove all keyboard hotkeys and stop the mouse listener (before discarding this instance)."""
+        for hotkey_id in self.keyboard_hotkey_ids:
+            try:
+                remove_hotkey(hotkey_id)
+            except Exception:
+                print('Could not remove a keyboard hotkey.')
+        self.keyboard_hotkey_ids = []
+        self.set_all_flags(False)
+        if hasattr(self, 'mouse_listener'):
+            self.mouse_listener.stop()
+
     def __del__(self):
         """Destructor to clean up mouse listener."""
         if hasattr(self, 'mouse_listener'):

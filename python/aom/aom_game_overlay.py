@@ -1,12 +1,9 @@
 # AoM game overlay
 import os
 
-from PyQt5.QtWidgets import QComboBox, QApplication
-from PyQt5.QtGui import QIcon, QFont
-from PyQt5.QtCore import QSize
+from PyQt5.QtWidgets import QApplication
 
-from common.useful_tools import widget_x_end, widget_y_end
-from common.rts_overlay import RTSGameOverlay, scale_list_int, PanelID
+from common.rts_overlay import RTSGameOverlay, scale_list_int
 from common.rts_overlay_images import RTSOverlayImages
 
 from aom.aom_settings import AoMOverlaySettings
@@ -58,26 +55,17 @@ class AoMGameOverlay(RTSGameOverlay):
             build_order_timer_step_starting_flag=False,
         )
 
-        # major god selection
-        layout = self.settings.layout
-        color_default = layout.color_default
-        style_description = f'color: rgb({color_default[0]}, {color_default[1]}, {color_default[2]})'
-        major_god_select_size = layout.configuration.major_god_select_size
-
-        self.major_god_select = QComboBox(self)
-        self.major_god_select.activated.connect(self.update_build_order_display)
-        self.major_god_combo_ids = []  # corresponding IDs
-        for major_god_name, letters_icon in aom_major_god_icon.items():
-            assert len(letters_icon) == 2
-            self.major_god_select.addItem(
-                QIcon(os.path.join(self.directory_game_pictures, 'major_god', letters_icon[1])), letters_icon[0]
-            )
-            self.major_god_combo_ids.append(major_god_name)
-        self.major_god_select.setIconSize(QSize(major_god_select_size[0], major_god_select_size[1]))
-        self.major_god_select.setStyleSheet(f'QWidget{{ {style_description} }};')
-        self.major_god_select.setToolTip('select major god')
-        self.major_god_select.setFont(QFont(layout.font_police, layout.font_size))
-        self.major_god_select.adjustSize()
+        # major god filter specification (used by the manager window)
+        self.faction_filter_specs = [
+            {
+                'key': 'major_god',
+                'tooltip': 'select major god',
+                'items': [
+                    (major_god_name, os.path.join(self.directory_game_pictures, 'major_god', letters_icon[1]))
+                    for major_god_name, letters_icon in aom_major_god_icon.items()
+                ],
+            }
+        ]
 
         self.update_panel_elements()  # update the current panel elements
 
@@ -90,58 +78,16 @@ class AoMGameOverlay(RTSGameOverlay):
         """
         super().reload(update_settings=update_settings)
 
-        # major god selection
-        layout = self.settings.layout
-        color_default = layout.color_default
-        style_description = f'color: rgb({color_default[0]}, {color_default[1]}, {color_default[2]})'
-        major_god_select_size = layout.configuration.major_god_select_size
-
-        self.major_god_select.setIconSize(QSize(major_god_select_size[0], major_god_select_size[1]))
-        self.major_god_select.setStyleSheet(f'QWidget{{ {style_description} }};')
-        self.major_god_select.setFont(QFont(layout.font_police, layout.font_size))
-        self.major_god_select.adjustSize()
-
         self.update_panel_elements()  # update the current panel elements
 
     def settings_scaling(self):
         """Apply the scaling on the settings."""
         super().settings_scaling()
-        assert 0 <= self.scaling_input_selected_id < len(self.scaling_input_combo_ids)
-        scaling = self.scaling_input_combo_ids[self.scaling_input_selected_id] / 100.0
+        scaling = self.unscaled_settings.layout.scaling / 100.0
 
         self.settings.layout.configuration.major_god_select_size = scale_list_int(
             scaling, self.unscaled_settings.layout.configuration.major_god_select_size
         )
-
-    def select_build_order_id(self, build_order_id: int = -1) -> bool:
-        """Select build order ID.
-
-        Parameters
-        ----------
-        build_order_id    ID of the build order, negative to select next build order.
-
-        Returns
-        -------
-        True if valid build order selection.
-        """
-        if self.selected_panel == PanelID.CONFIG:
-            if super().select_build_order_id(build_order_id):
-                major_god_id = self.major_god_select.currentIndex()
-                assert 0 <= major_god_id < len(self.major_god_combo_ids)
-                self.obtain_build_order_search(key_condition={'major_god': self.major_god_combo_ids[major_god_id]})
-                if build_order_id >= 0:  # directly select in case of clicking
-                    self.select_build_order(
-                        key_condition={'major_god': self.major_god_combo_ids[self.major_god_select.currentIndex()]}
-                    )
-                self.config_panel_layout()
-                return True
-        return False
-
-    def hide_elements(self):
-        """Hide elements."""
-        super().hide_elements()
-
-        self.major_god_select.hide()
 
     def get_age_image(self, age_id: int) -> str:
         """Get the image for a requested age.
@@ -166,75 +112,6 @@ class AoMGameOverlay(RTSGameOverlay):
             return self.images.age_5
         else:
             raise Exception('Unknown age: ' + str(age_id))
-
-    def update_build_order_display(self):
-        """Update the build order search matching display."""
-        major_god_id = self.major_god_select.currentIndex()
-        assert 0 <= major_god_id < len(self.major_god_combo_ids)
-        self.obtain_build_order_search(key_condition={'major_god': self.major_god_combo_ids[major_god_id]})
-        self.config_panel_layout()
-
-    def enter_key_actions(self):
-        """Actions performed when pressing the Enter key."""
-        if self.selected_panel == PanelID.CONFIG:
-            if self.build_order_search.hasFocus():
-                self.select_build_order(
-                    key_condition={'major_god': self.major_god_combo_ids[self.major_god_select.currentIndex()]}
-                )
-
-            self.config_panel_layout()  # update layout
-
-    def config_panel_layout(self):
-        """Layout of the configuration panel."""
-        super().config_panel_layout()
-        if self.selected_panel != PanelID.CONFIG:
-            return
-
-        # show elements
-        self.major_god_select.show()
-
-        layout = self.settings.layout
-        border_size = layout.border_size
-        horizontal_spacing = layout.horizontal_spacing
-        vertical_spacing = layout.vertical_spacing
-        action_button_size = layout.action_button_size
-
-        # next Y position
-        next_y = (
-            border_size
-            + max(action_button_size, self.font_size_input.height(), self.scaling_input.height())
-            + vertical_spacing
-        )
-
-        # build order selection
-        self.build_order_title.move(border_size, next_y)
-        next_x = border_size + self.build_order_title.width() + horizontal_spacing
-
-        # major god selection
-        self.major_god_select.move(next_x, next_y)
-
-        if self.major_god_select.height() > self.build_order_title.height():
-            self.build_order_title.move(
-                self.build_order_title.x(), widget_y_end(self.major_god_select) - self.build_order_title.height()
-            )
-        next_y += max(self.build_order_title.height(), self.major_god_select.height()) + vertical_spacing
-
-        # build order search
-        self.build_order_search.move(border_size, next_y)
-        next_y += self.build_order_search.height() + vertical_spacing
-
-        if widget_x_end(self.build_order_search) > widget_x_end(self.major_god_select):
-            self.major_god_select.move(
-                widget_x_end(self.build_order_search) - self.major_god_select.width(), self.major_god_select.y()
-            )
-        elif widget_x_end(self.build_order_search) < widget_x_end(self.major_god_select):
-            self.build_order_search.resize(
-                widget_x_end(self.major_god_select) - self.build_order_search.x(), self.build_order_search.height()
-            )
-
-        self.build_order_selection.update_size_position(init_y=next_y)
-
-        self.config_panel_layout_resize_move()  # size and position
 
     def update_build_order(self):
         """Update the build order panel."""

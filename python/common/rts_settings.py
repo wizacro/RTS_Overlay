@@ -28,6 +28,7 @@ class RTSBuildOrderLayout(SettingsSubclass):
         self.bo_next_tab_spacing: int = 30  # horizontal spacing between build order last button and next tab button
         self.height_line_notes: int = 3  # height of the line before the notes
         self.color_line_notes: list = [168, 177, 183]  # color of the line before the notes
+        self.display_rows: int = 3  # note lines displayed per page in the manual mode (1-5)
 
 
 class RTSBuildOrderTimerLayout(RTSBuildOrderLayout):
@@ -130,6 +131,9 @@ class RTSOverlaySettings(SettingsSubclass):
         self.timer_available: bool = True  # True if timer feature available
 
         self.call_ms: int = 20  # interval between 2 calls (e.g. for mouse motion) [ms]
+
+        # manager window
+        self.manager_theme: str = 'light'  # manager UI theme ('light' or 'dark')
 
         # panel to configure the hotkeys
         self.panel_hotkeys: RTSHotkeysConfigurationLayout = RTSHotkeysConfigurationLayout()

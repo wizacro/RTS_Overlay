@@ -1,24 +1,18 @@
 import os
 import json
 import time
-import webbrowser
 import appdirs
-import re
-import subprocess
 from math import floor
 from enum import Enum
 from copy import deepcopy
 from thefuzz import process
 from typing import Dict, Union
 
-from PyQt5.QtWidgets import QDialog, QMainWindow, QApplication, QLabel, QLineEdit
-from PyQt5.QtWidgets import  QMessageBox, QTextEdit, QVBoxLayout, QPushButton, QGridLayout
-from PyQt5.QtWidgets import QWidget, QComboBox, QShortcut
+from PyQt5.QtWidgets import QApplication, QLabel, QMainWindow, QShortcut, QWidget
+from PyQt5.QtGui import QKeySequence, QFont, QIcon, QCursor
+from PyQt5.QtCore import Qt, QPoint, QSize, QTimer
 
 from common.chinese_locale import t  # Chinese UI layer (translation of dynamic message parts)
-from PyQt5.QtGui import QKeySequence, QFont, QIcon, QCursor
-from PyQt5.QtCore import Qt, QPoint, QSize
-
 
 from common.build_order_tools import (
     get_build_orders,
@@ -27,29 +21,27 @@ from common.build_order_tools import (
     get_build_order_timer_step_ids,
     get_build_order_timer_steps_display,
 )
-from common.label_display import MultiQLabelDisplay, QLabelSettings
+from common.label_display import MultiQLabelDisplay
 from common.useful_tools import (
     TwinHoverButton,
     scale_int,
     scale_list_int,
     set_background_opacity,
     widget_x_end,
-    widget_y_end,
     popup_message,
 )
 from common.keyboard_mouse import KeyboardMouseManagement
 from common.rts_settings import KeyboardMouse
-from common.hotkeys_window import HotkeysWindow
 
 
-# ID of the panel to display
+# ID of the overlay state (the manager window switches between the two)
 class PanelID(Enum):
-    CONFIG = 0  # Configuration
-    BUILD_ORDER = 1  # Display Build Order
+    CONFIG = 0  # Arrange state (pre-game): whole window draggable
+    BUILD_ORDER = 1  # In-game state: no dragging, buttons clickable, rest click-through
 
 
 class RTSGameOverlay(QMainWindow):
-    """RTS game overlay application."""
+    """RTS game overlay application (display only, managed by the manager window)."""
 
     def __init__(
         self,
@@ -91,7 +83,7 @@ class RTSGameOverlay(QMainWindow):
         # initialization not yet done
         self.init_done = False
 
-        self.selected_panel = PanelID.CONFIG  # panel to display
+        self.selected_panel = PanelID.CONFIG  # overlay state (arrange by default, manager opens it)
 
         self.show_resources = True  # True to show the resources in the build order current display
 
@@ -143,19 +135,6 @@ class RTSGameOverlay(QMainWindow):
             # save the settings
             self.save_settings()
 
-        # font size and scaling combo
-        self.font_size_input = QComboBox(self)
-        self.font_size_input.currentIndexChanged.connect(self.font_size_combo_box_change)
-        self.font_size_input_combo_ids = []  # corresponding IDs
-        self.font_size_input_selected_id = 0  # selected ID for this combo box
-
-        self.scaling_input = QComboBox(self)
-        self.scaling_input.currentIndexChanged.connect(self.scaling_combo_box_change)
-        self.scaling_input_combo_ids = []  # corresponding IDs
-        self.scaling_input_selected_id = 0  # selected ID for this combo box
-
-        self.font_size_scaling_initialization()
-
         # scaling the settings
         self.settings = deepcopy(self.unscaled_settings)
         self.settings_scaling()
@@ -166,8 +145,8 @@ class RTSGameOverlay(QMainWindow):
         self.game_icon = os.path.join(self.directory_common_pictures, images.game_icon)
         self.setWindowIcon(QIcon(self.game_icon))
 
-        # Display panel
-        self.hidden = False  # True to hide the window (0 opacity), False to display it
+        # display panel: the overlay starts closed, the manager window opens it
+        self.hidden = True
 
         # mouse position
         self.mouse_x = 0
@@ -190,6 +169,13 @@ class RTSGameOverlay(QMainWindow):
             self.directory_build_orders, check_valid_build_order, category_name=self.build_order_category_name
         )
         self.valid_key_build_orders_count = len(self.build_orders) # will be updated to the correct key count later
+        self.last_filter_condition = None  # last key condition used by the manager search
+
+        # faction filter specifications for the manager window (daughter classes may set this)
+        self.faction_filter_specs = []
+
+        # manager callback to notify overlay state changes
+        self.mode_callback = None
 
         # move window
         self.setMouseTracking(True)  # mouse tracking
@@ -199,23 +185,10 @@ class RTSGameOverlay(QMainWindow):
         self.init_y = self.frameGeometry().y()  # initial mouse Y position
         self.adapt_notes_to_columns = -1  # columns size adaptation for the notes
 
-        # build order selection
+        # build order display elements
         layout = self.settings.layout
-        self.build_order_title = QLabel('Build order', self)
-        self.build_order_search = QLineEdit(self)
-        self.build_order_search.setPlaceholderText('keywords or space')
-        self.build_order_search.textChanged.connect(self.update_build_order_display)
-        self.build_order_selection = MultiQLabelDisplay(
-            font_police=layout.font_police,
-            font_size=layout.font_size,
-            border_size=layout.border_size,
-            vertical_spacing=layout.configuration.build_order_selection_vertical_spacing,
-            color_default=layout.color_default,
-        )
-
-        # configuration elements initialization
         self.build_order_step_time = QLabel('Step: 0/0', self)
-        self.configuration_initialization()
+        self.build_order_step_time_styling()
 
         self.build_order_resources = MultiQLabelDisplay(
             font_police=layout.font_police,
@@ -269,68 +242,9 @@ class RTSGameOverlay(QMainWindow):
         self.upper_right_position = [0, 0]
         self.window_color_position_initialization()
 
-        # next panel configuration button
+        # overlay buttons (start/stop timer, previous step, next step)
         action_button_qsize = QSize(self.settings.layout.action_button_size, self.settings.layout.action_button_size)
 
-        self.next_panel_button = TwinHoverButton(
-            parent=self,
-            click_connect=self.next_panel,
-            icon=QIcon(os.path.join(self.directory_common_pictures, images.next_panel)),
-            button_qsize=action_button_qsize,
-            tooltip='next panel',
-        )
-
-        self.hide_panel_button = TwinHoverButton(
-            parent=self,
-            click_connect=self.show_hide,
-            icon=QIcon(os.path.join(self.directory_common_pictures, images.hide_panel)),
-            button_qsize=action_button_qsize,
-            tooltip='hide panel',
-        )
-
-        # configuration panel buttons
-        self.config_quit_button = TwinHoverButton(
-            parent=self,
-            click_connect=self.quit_application,
-            icon=QIcon(os.path.join(self.directory_common_pictures, images.quit)),
-            button_qsize=action_button_qsize,
-            tooltip='quit application',
-        )
-
-        self.config_save_button = TwinHoverButton(
-            parent=self,
-            click_connect=self.save_settings,
-            icon=QIcon(os.path.join(self.directory_common_pictures, images.save)),
-            button_qsize=action_button_qsize,
-            tooltip='save settings',
-        )
-
-        self.config_reload_button = TwinHoverButton(
-            parent=self,
-            click_connect=self.reload,
-            click_connect_args=True,
-            icon=QIcon(os.path.join(self.directory_common_pictures, images.load)),
-            button_qsize=action_button_qsize,
-            tooltip='reload settings',
-        )
-
-        self.config_hotkey_button = TwinHoverButton(
-            parent=self,
-            click_connect=self.open_panel_configure_hotkeys,
-            icon=QIcon(os.path.join(self.directory_common_pictures, images.config_hotkeys)),
-            button_qsize=action_button_qsize,
-            tooltip='configure hotkeys',
-        )
-
-        self.add_edit_build_orders_button = TwinHoverButton(
-            parent=self,
-            click_connect=self.add_edit_build_orders,
-            icon=QIcon(os.path.join(self.directory_common_pictures, images.add_edit_build_orders)),
-            button_qsize=action_button_qsize,
-            tooltip='add/edit build orders in BO folder',
-        )
-
-        # build order panel buttons
         bo_previous_tooltip = (
             'previous build order step / -1 sec' if build_order_timer_available else 'previous build order step'
         )
@@ -351,44 +265,31 @@ class RTSGameOverlay(QMainWindow):
             tooltip=bo_next_tooltip,
         )
 
-        # timer features
         if self.settings.timer_available:
-            self.build_order_switch_timer_manual = TwinHoverButton(
-                parent=self,
-                click_connect=self.switch_build_order_timer_manual,
-                icon=QIcon(os.path.join(self.directory_common_pictures, images.switch_timer_manual)),
-                button_qsize=action_button_qsize,
-                tooltip='switch BO mode between timer and manual',
-            )
-
             self.build_order_start_stop_timer = TwinHoverButton(
                 parent=self,
-                click_connect=(lambda: self.start_stop_build_order_timer(invert_run=True)),
+                click_connect=self.overlay_start_timer_button,
                 icon=QIcon(os.path.join(self.directory_common_pictures, images.start_stop_timer)),
                 button_qsize=action_button_qsize,
                 tooltip='start/stop the BO timer',
             )
-
-            self.build_order_reset_timer = TwinHoverButton(
-                parent=self,
-                click_connect=self.reset_build_order_timer,
-                icon=QIcon(os.path.join(self.directory_common_pictures, images.reset_timer)),
-                button_qsize=action_button_qsize,
-                tooltip='reset the BO timer',
-            )
         else:
-            self.build_order_switch_timer_manual = None
             self.build_order_start_stop_timer = None
-            self.build_order_reset_timer = None
 
-        # enter key selection
+        # hide button (two clicks required, to avoid hiding the overlay by mistake)
+        self.hide_button_armed = False
+        self.build_order_hide_button = TwinHoverButton(
+            parent=self,
+            click_connect=self.hide_button_clicked,
+            icon=QIcon(os.path.join(self.directory_common_pictures, images.hide_panel)),
+            button_qsize=action_button_qsize,
+            tooltip='Click twice to hide',
+        )
+
+        # select the next build order (global shortcut, works with the manager search results)
         hotkeys = self.settings.hotkeys
-        self.hotkey_enter = QShortcut(QKeySequence(hotkeys.enter), self)
-        self.hotkey_enter.activated.connect(self.enter_key_actions)
-
-        # select the next build order
         self.hotkey_next_build_order = QShortcut(QKeySequence(hotkeys.select_next_build_order), self)
-        self.hotkey_next_build_order.activated.connect(self.select_build_order_id)
+        self.hotkey_next_build_order.activated.connect(self.select_next_build_order)
 
         # keyboard and mouse global hotkeys
         self.hotkey_names = ['next_panel', 'show_hide', 'build_order_previous_step', 'build_order_next_step']
@@ -402,7 +303,7 @@ class RTSGameOverlay(QMainWindow):
         self.mouse_buttons_dict = dict()  # dictionary as {keyboard_name: mouse_button_name}
         self.set_keyboard_mouse()
 
-        # configure hotkeys
+        # configure hotkeys window (opened from the manager, parented to the overlay)
         self.panel_config_hotkeys = None
 
         # create build orders folder
@@ -421,7 +322,6 @@ class RTSGameOverlay(QMainWindow):
 
         # re-initialization not yet done
         self.init_done = False
-        self.config_reload_button.hide()
 
         # settings
         if update_settings:
@@ -435,9 +335,6 @@ class RTSGameOverlay(QMainWindow):
                 print('No user settings file saved, resetting to default values.')
         else:
             print('Reload without updating the settings.')
-
-        # font size and scaling combo
-        self.font_size_scaling_initialization()
 
         # scaling the settings
         self.settings = deepcopy(self.unscaled_settings)
@@ -468,18 +365,9 @@ class RTSGameOverlay(QMainWindow):
         self.init_x = self.frameGeometry().x()  # initial mouse X position
         self.init_y = self.frameGeometry().y()  # initial mouse Y position
 
-        # build order selection
+        # build order display elements
         layout = self.settings.layout
-        self.build_order_selection.update_settings(
-            font_police=layout.font_police,
-            font_size=layout.font_size,
-            border_size=layout.border_size,
-            vertical_spacing=layout.configuration.build_order_selection_vertical_spacing,
-            color_default=layout.color_default,
-        )
-
-        # configuration elements initialization
-        self.configuration_initialization()
+        self.build_order_step_time_styling()
 
         # display build order
         self.build_order_resources.update_settings(
@@ -509,41 +397,9 @@ class RTSGameOverlay(QMainWindow):
         # window color and position
         self.window_color_position_initialization()
 
-        # next panel configuration button
+        # overlay buttons
         action_button_qsize = QSize(self.settings.layout.action_button_size, self.settings.layout.action_button_size)
 
-        self.next_panel_button.update_icon_size(
-            icon=QIcon(os.path.join(self.directory_common_pictures, images.next_panel)),
-            button_qsize=action_button_qsize,
-        )
-
-        self.hide_panel_button.update_icon_size(
-            icon=QIcon(os.path.join(self.directory_common_pictures, images.hide_panel)),
-            button_qsize=action_button_qsize,
-        )
-
-        # configuration panel buttons
-        self.config_quit_button.update_icon_size(
-            QIcon(os.path.join(self.directory_common_pictures, images.quit)), action_button_qsize
-        )
-
-        self.config_save_button.update_icon_size(
-            QIcon(os.path.join(self.directory_common_pictures, images.save)), action_button_qsize
-        )
-
-        self.config_reload_button.update_icon_size(
-            QIcon(os.path.join(self.directory_common_pictures, images.load)), action_button_qsize
-        )
-
-        self.config_hotkey_button.update_icon_size(
-            QIcon(os.path.join(self.directory_common_pictures, images.config_hotkeys)), action_button_qsize
-        )
-
-        self.add_edit_build_orders_button.update_icon_size(
-            QIcon(os.path.join(self.directory_common_pictures, images.add_edit_build_orders)), action_button_qsize
-        )
-
-        # build order panel buttons
         self.build_order_previous_button.update_icon_size(
             QIcon(os.path.join(self.directory_common_pictures, images.build_order_previous_step)), action_button_qsize
         )
@@ -552,30 +408,11 @@ class RTSGameOverlay(QMainWindow):
             QIcon(os.path.join(self.directory_common_pictures, images.build_order_next_step)), action_button_qsize
         )
 
-        # timer features
-        if self.build_order_switch_timer_manual is None:
-            self.settings.timer_available = False  # cannot be updated without relaunching the app
-        if self.settings.timer_available:
-            self.build_order_switch_timer_manual.update_icon_size(
-                QIcon(os.path.join(self.directory_common_pictures, images.switch_timer_manual)), action_button_qsize
-            )
-
-            self.build_order_reset_timer.update_icon_size(
-                QIcon(os.path.join(self.directory_common_pictures, images.reset_timer)), action_button_qsize
-            )
-
+        if self.build_order_start_stop_timer is not None:
             self.update_build_order_start_stop_timer_icon()
 
         # keyboard and mouse global hotkeys
         self.set_keyboard_mouse()
-
-        # open popup message
-        if update_settings:
-            if os.path.exists(self.settings_file):
-                msg_text = f'Settings reloaded using the parameters from {self.settings_file}.'
-            else:
-                msg_text = f'Settings reloaded with the default values ({self.settings_file} not generated).'
-            popup_message('RTS Overlay - Reload', msg_text)
 
         # re-initialization done
         self.init_done = True
@@ -633,7 +470,6 @@ class RTSGameOverlay(QMainWindow):
 
         # selection keys
         hotkey_settings = self.unscaled_settings.hotkeys
-        self.hotkey_enter.setKey(QKeySequence(hotkey_settings.enter))
         self.hotkey_next_build_order.setKey(QKeySequence(hotkey_settings.select_next_build_order))
 
         self.mouse_buttons_dict.clear()  # clear mouse buttons
@@ -670,123 +506,25 @@ class RTSGameOverlay(QMainWindow):
         # all flags to not set
         self.keyboard_mouse.set_all_flags(False)
 
-    def font_size_scaling_initialization(self):
-        """Font size and scaling combo initialization (common to constructor and reload)."""
-        layout = self.unscaled_settings.layout
-        color_default = layout.color_default
-        color_default_str = f'color: rgb({color_default[0]}, {color_default[1]}, {color_default[2]})'
-        qwidget_color_default_str = f'QWidget{{ {color_default_str} }};'
-
-        # font size combo
-        font_size_limits = layout.configuration.font_size_limits
-        assert len(font_size_limits) == 2
-        self.font_size_input.clear()
-        self.font_size_input_combo_ids = []
-        self.font_size_input_selected_id = 0
-
-        # loop on the font size inputs
-        for count, font_size in enumerate(range(font_size_limits[0], font_size_limits[1] + 1)):
-            self.font_size_input.addItem(f'{font_size} p')
-            self.font_size_input_combo_ids.append(font_size)
-            if font_size == layout.font_size:
-                self.font_size_input_selected_id = count
-
-        self.font_size_input.setStyleSheet(qwidget_color_default_str)
-        self.font_size_input.setFont(QFont(layout.font_police, layout.font_size))
-        self.font_size_input.setCurrentIndex(self.font_size_input_selected_id)
-        self.font_size_input.setToolTip('font size')
-        self.font_size_input.adjustSize()
-
-        # scaling combo
-        assert len(layout.configuration.scaling_list) > 0
-        self.scaling_input.clear()
-        self.scaling_input_combo_ids = []
-        self.scaling_input_selected_id = 0
-
-        for count, scaling in enumerate(layout.configuration.scaling_list):  # loop on the scaling inputs
-            self.scaling_input.addItem(f'{scaling} %')
-            self.scaling_input_combo_ids.append(scaling)
-            if scaling == layout.scaling:
-                self.scaling_input_selected_id = count
-
-        self.scaling_input.setStyleSheet(qwidget_color_default_str)
-        self.scaling_input.setFont(QFont(layout.font_police, layout.font_size))
-        self.scaling_input.setCurrentIndex(self.scaling_input_selected_id)
-        self.scaling_input.setToolTip('scaling of pictures, spacing...')
-        self.scaling_input.adjustSize()
-
-    def get_no_build_order_text(self):
-        """Get a message when no build order is selected."""
-        if len(self.build_orders) == 0:
-            return 'No valid build order in the build order folder.'
-        elif self.valid_key_build_orders_count == 0:
-            return 'No valid build order for this faction.'
-        elif self.build_order_search.text() == '':
-            return 'Select build order with search bar.'
-        else:
-            return 'No valid build order found with these keywords.'
-
-    def configuration_initialization(self):
-        """Configuration elements initialization (common to constructor and reload)."""
+    def build_order_step_time_styling(self):
+        """Styling of the build order step label (common to constructor and reload)."""
         layout = self.settings.layout
-        color_default = layout.color_default
-        color_default_str = f'color: rgb({color_default[0]}, {color_default[1]}, {color_default[2]})'
-        qwidget_color_default_str = f'QWidget{{ {color_default_str}; border: 1px solid white }};'
-
-        # title for the build order search bar
-        self.build_order_title.setStyleSheet(color_default_str)
-        self.build_order_title.setFont(QFont(layout.font_police, layout.font_size))
-        self.build_order_title.adjustSize()
-
-        # build order search bar
-        self.build_order_search.resize(
-            layout.configuration.build_order_search_size[0], layout.configuration.build_order_search_size[1]
-        )
-        self.build_order_search.setStyleSheet(qwidget_color_default_str)
-        self.build_order_search.setFont(QFont(layout.font_police, layout.font_size))
-        self.build_order_search.setToolTip('build order keywords, separated by spaces')
-
-        # indicating the build orders selection
-        self.build_order_selection.clear()
-        self.build_order_selection.add_row_from_picture_line(parent=self, line=self.get_no_build_order_text())
-
-        # selected step of the build order
+        color_default_str = f'color: rgb({layout.color_default[0]}, {layout.color_default[1]}, {layout.color_default[2]})'
         self.build_order_step_time.setStyleSheet(color_default_str)
         self.build_order_step_time.setFont(QFont(layout.font_police, layout.font_size))
         self.build_order_step_time.adjustSize()
 
-    def window_color_position_initialization(self):
-        """Main window color and position initialization (common to constructor and reload)."""
-        layout = self.settings.layout
-        color_background = layout.color_background
-
-        # color and opacity
-        set_background_opacity(self, color_background, layout.opacity)
-
-        # upper left and right positions
-        self.upper_left_position = [layout.upper_left_position[0], layout.upper_left_position[1]]
-        self.upper_right_position = [layout.upper_right_position[0], layout.upper_right_position[1]]
-        self.update_position()
-
     def settings_scaling(self):
-        """Apply the scaling on the settings."""
-        assert 0 <= self.scaling_input_selected_id < len(self.scaling_input_combo_ids)
+        """Apply the scaling on the settings (scaling value from the settings)."""
+        scaling = self.unscaled_settings.layout.scaling / 100.0
         layout = self.settings.layout
         unscaled_layout = self.unscaled_settings.layout
-        scaling = self.scaling_input_combo_ids[self.scaling_input_selected_id] / 100.0  # [%] -> [-]
 
         layout.border_size = scale_int(scaling, unscaled_layout.border_size)
         layout.vertical_spacing = scale_int(scaling, unscaled_layout.vertical_spacing)
         layout.horizontal_spacing = scale_int(scaling, unscaled_layout.horizontal_spacing)
         layout.action_button_size = scale_int(scaling, unscaled_layout.action_button_size)
         layout.action_button_spacing = scale_int(scaling, unscaled_layout.action_button_spacing)
-
-        configuration = layout.configuration
-        unscaled_configuration = unscaled_layout.configuration
-        configuration.build_order_search_size = scale_list_int(scaling, unscaled_configuration.build_order_search_size)
-        configuration.build_order_selection_vertical_spacing = scale_int(
-            scaling, unscaled_configuration.build_order_selection_vertical_spacing
-        )
 
         build_order = layout.build_order
         unscaled_build_order = unscaled_layout.build_order
@@ -803,8 +541,47 @@ class RTSGameOverlay(QMainWindow):
         panel_hotkeys.vertical_spacing = scale_int(scaling, unscaled_panel_hotkeys.vertical_spacing)
         panel_hotkeys.horizontal_spacing = scale_int(scaling, unscaled_panel_hotkeys.horizontal_spacing)
 
+    def get_filter_specs(self):
+        """Get the faction filter specifications for the manager window.
+
+        Returns
+        -------
+        List of dictionaries with keys: 'key' (build order key), 'tooltip', 'items'
+        (list of tuples (name, icon path)).
+        """
+        return self.faction_filter_specs
+
+    def get_build_order_names(self, key_condition: dict = None, search_string: str = ''):
+        """Filter the build orders for the manager search.
+
+        Parameters
+        ----------
+        key_condition   Dictionary with the keys to look for and their value, None to skip it.
+        search_string   Search string from the manager search bar.
+
+        Returns
+        -------
+        List of valid build order names, message to display when no match (None otherwise).
+        """
+        self.last_filter_condition = key_condition
+        self.get_valid_build_orders(key_condition, search_string)
+        if len(self.valid_build_orders) > 0:
+            return list(self.valid_build_orders), None
+        return [], self.get_no_build_order_text(search_string)
+
+    def get_no_build_order_text(self, search_string: str = ''):
+        """Get a message when no build order matches the search."""
+        if len(self.build_orders) == 0:
+            return 'No valid build order in the build order folder.'
+        elif self.valid_key_build_orders_count == 0:
+            return 'No valid build order for this faction.'
+        elif search_string == '':
+            return 'Select build order with search bar.'
+        else:
+            return 'No valid build order found with these keywords.'
+
     def next_panel(self):
-        """Select the next panel."""
+        """Switch between the arrange (pre-game) and in-game overlay states."""
 
         # saving the upper right corner position
         if self.selected_panel == PanelID.CONFIG:
@@ -815,33 +592,44 @@ class RTSGameOverlay(QMainWindow):
         elif self.selected_panel == PanelID.BUILD_ORDER:
             self.selected_panel = PanelID.CONFIG
 
-        if self.selected_panel == PanelID.CONFIG:
-            self.build_order_search.setText('') # reset text search
-
-            if self.selected_build_order is not None: # display selected build order
-                self.build_order_selection.clear()
-                self.build_order_selection.add_row_from_picture_line(
-                    parent=self,
-                    line='Selected: ' + self.selected_build_order_name,
-                    labels_settings=[
-                        QLabelSettings(
-                            text_bold=True, text_color=self.settings.layout.configuration.selected_build_order_color
-                        )
-                    ],
-                )
-
-        self.update_panel_elements()  # update the elements of the panel to display
+        self.update_panel_elements()  # update the elements of the state to display
         self.update_position()  # restoring the upper right corner position
 
-    def update_panel_elements(self):
-        """Update the elements of the panel to display."""
-        if self.selected_panel != PanelID.CONFIG:
-            QApplication.restoreOverrideCursor()
-        else:
-            QApplication.setOverrideCursor(Qt.ArrowCursor)
+        if self.mode_callback is not None:  # notify the manager window
+            self.mode_callback(self.selected_panel)
 
-        # window is transparent to mouse events, except for the configuration when not hidden
-        self.setAttribute(Qt.WA_TransparentForMouseEvents, self.hidden or (self.selected_panel != PanelID.CONFIG))
+    def overlay_visible(self) -> bool:
+        """True if the overlay is currently open (from the manager perspective)."""
+        return (not self.hidden) and self.isVisible()
+
+    def open_overlay(self):
+        """Show the overlay (requested from the manager window)."""
+        self.hidden = False
+        self.update_panel_elements()
+        self.setWindowOpacity(self.settings.layout.opacity)
+        self.update_position()
+
+    def close_overlay(self):
+        """Hide the overlay (requested from the manager window)."""
+        self.hidden = True
+        self.setWindowOpacity(0.0)
+        self.hide()
+
+    def update_panel_elements(self):
+        """Update the elements of the overlay state to display."""
+        if self.hidden:
+            self.update_build_order()  # keep the display data up to date even while hidden
+            return
+
+        if self.selected_panel == PanelID.CONFIG:
+            QApplication.setOverrideCursor(Qt.ArrowCursor)
+        else:
+            QApplication.restoreOverrideCursor()
+
+        # in-game state: window is transparent to mouse events, except for the buttons (children)
+        self.setAttribute(
+            Qt.WA_TransparentForMouseEvents, self.selected_panel != PanelID.CONFIG
+        )
 
         # remove the window title and stay always on top
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
@@ -849,33 +637,20 @@ class RTSGameOverlay(QMainWindow):
         # hide the elements by default
         self.hide_elements()
 
-        if self.selected_panel == PanelID.CONFIG:  # Configuration
-            self.config_panel_layout()
-            self.build_order_search.setFocus()
-        elif self.selected_panel == PanelID.BUILD_ORDER:  # Build Order
-            self.update_build_order()
+        # both states display the build order content
+        self.update_build_order()
 
         # show the main window
         self.show()
 
-    def mousePressEvent(self, event):
-        """Actions related to the mouse pressing events.
-
-        Parameters
-        ----------
-        event    Mouse event.
-        """
-        if self.selected_panel == PanelID.CONFIG:  # only needed when in configuration mode
-            self.build_order_click_select(event)
-
     def mouseMoveEvent(self, event):
-        """Actions related to the mouse moving events.
+        """Actions related to the mouse moving events (drag in the arrange state).
 
         Parameters
         ----------
         event    Mouse event.
         """
-        if self.selected_panel == PanelID.CONFIG:  # only needed when in configuration mode
+        if self.selected_panel == PanelID.CONFIG:  # only needed when in the arrange state
             self.move_window(event)
 
     def quit_application(self):
@@ -884,242 +659,20 @@ class RTSGameOverlay(QMainWindow):
         print('Stopping the application.')
 
         self.hide()  # hide the application while closing it
-        self.config_quit_button.hide()
 
-        self.config_quit_button.close()
-        self.config_save_button.close()
-        self.config_reload_button.close()
-        self.config_hotkey_button.close()
-        self.add_edit_build_orders_button.close()
-
-        self.next_panel_button.close()
-        self.hide_panel_button.close()
         self.build_order_previous_button.close()
         self.build_order_next_button.close()
-        if self.settings.timer_available:
-            self.build_order_switch_timer_manual.close()
+        if self.build_order_start_stop_timer is not None:
             self.build_order_start_stop_timer.close()
-            self.build_order_reset_timer.close()
+        self.build_order_hide_button.close()
 
         if (self.panel_config_hotkeys is not None) and self.panel_config_hotkeys.isVisible():
             self.panel_config_hotkeys.close()
             self.panel_config_hotkeys = None
 
+        self.keyboard_mouse.shutdown()  # release global hotkeys
         self.close()
         QApplication.quit()
-
-    def font_size_combo_box_change(self, value):
-        """Detect when the font size changed.
-
-        Parameters
-        ----------
-        value    ID of the new font size in 'self.font_size_input_combo_ids'.
-        """
-        if self.init_done and (0 <= value < len(self.font_size_input_combo_ids)):
-            new_font = self.font_size_input_combo_ids[value]
-            # main font size
-            self.settings.layout.font_size = new_font
-            self.unscaled_settings.layout.font_size = new_font
-            # panel to configure the hotkeys
-            self.settings.panel_hotkeys.font_size = new_font
-            self.unscaled_settings.panel_hotkeys.font_size = new_font
-
-            print(f'Font size updated to {new_font}.')
-            self.reload(update_settings=False)
-
-    def scaling_combo_box_change(self, value):
-        """Detect when the scaling changed.
-
-        Parameters
-        ----------
-        value    ID of the new scaling in 'self.scaling_input_combo_ids'.
-        """
-        if self.init_done and (0 <= value < len(self.scaling_input_combo_ids)):
-            self.settings.layout.scaling = self.scaling_input_combo_ids[value]
-            self.unscaled_settings.layout.scaling = self.scaling_input_combo_ids[value]
-            print(f'Scaling updated to {self.scaling_input_combo_ids[value]}.')
-            self.reload(update_settings=False)
-
-    def open_panel_configure_hotkeys(self):
-        """Open/close the panel to configure the hotkeys."""
-        if (self.panel_config_hotkeys is not None) and self.panel_config_hotkeys.isVisible():  # close panel
-            self.panel_config_hotkeys.close()
-            self.panel_config_hotkeys = None
-            self.keyboard_mouse.set_all_flags(False)
-        else:  # open new panel
-            self.panel_config_hotkeys = HotkeysWindow(
-                parent=self,
-                hotkeys=self.unscaled_settings.hotkeys,
-                game_icon=self.game_icon,
-                mouse_image=os.path.join(self.directory_common_pictures, self.images.mouse),
-                configuration_folder=self.directory_config_game,
-                panel_settings=self.settings.panel_hotkeys,
-                timer_flag=self.build_order_timer['available'],
-            )
-
-    def add_edit_build_orders(self):
-        """Display a window for pasting BO text, open the website or the local folders."""
-
-        # Create a custom dialog for pasting text
-        dialog = QDialog(self)
-        dialog.setWindowTitle("Paste Build Order Text")
-        dialog.setModal(True)
-        dialog.resize(800, 600)
-
-        # Style for the text edit: white text on black background + white border
-        text_edit_style = """
-            QTextEdit {
-                background-color: black;
-                color: white;
-                border: 1px solid white;
-                padding: 4px;
-            }
-        """
-
-        # Add a text edit widget for pasting
-        text_edit = QTextEdit(dialog)
-        text_edit.setPlaceholderText(
-            "Paste your build order text (RTS Overlay format) here.\n\n"
-            "Check rts-overlay.github.io (link below) to design your build order\n"
-            "or to get links to third-party websites providing build orders in RTS Overlay format."
-        )
-        text_edit.setStyleSheet(text_edit_style)
-        text_edit.setFont(QFont(self.settings.layout.font_police, self.settings.layout.font_size))
-
-        # Style for buttons: white text + white border
-        button_style = """
-            QPushButton {
-                color: white;
-                border: 1px solid white;
-                padding: 4px;
-            }
-            QPushButton:hover {
-                background-color: rgba(255, 255, 255, 30);
-            }
-        """
-
-        # Open rts-overlay.github.io
-        open_website_button = QPushButton("Open rts-overlay.github.io", dialog)
-        open_website_button.setStyleSheet(button_style)
-        open_website_button.setFont(QFont(self.settings.layout.font_police, self.settings.layout.font_size))
-        open_website_button.clicked.connect(lambda: webbrowser.open("https://rts-overlay.github.io"))
-
-        # Add a button to save the pasted text
-        save_button = QPushButton("Save Build Order", dialog)
-        save_button.setStyleSheet(button_style)
-        save_button.setFont(QFont(self.settings.layout.font_police, self.settings.layout.font_size))
-        save_button.clicked.connect(lambda: self.save_pasted_build_order(text_edit.toPlainText(), dialog))
-
-        # Add a button to open the build order folder in the system file explorer
-        open_bo_folder_button = QPushButton("Open Build Order Folder", dialog)
-        open_bo_folder_button.setStyleSheet(button_style)
-        open_bo_folder_button.setFont(QFont(self.settings.layout.font_police, self.settings.layout.font_size))
-        open_bo_folder_button.clicked.connect(lambda: subprocess.run(['explorer', self.directory_build_orders]))
-
-        # Add a button to open the settings folder in the system file explorer
-        open_settings_folder_button = QPushButton("Open Settings Folder", dialog)
-        open_settings_folder_button.setStyleSheet(button_style)
-        open_settings_folder_button.setFont(QFont(self.settings.layout.font_police, self.settings.layout.font_size))
-        open_settings_folder_button.clicked.connect(lambda: subprocess.run(['explorer', self.directory_settings]))
-
-        # Layout
-        main_layout = QVBoxLayout(dialog)
-        main_layout.addWidget(text_edit)
-
-        # Create a grid layout for the buttons (2x2)
-        button_layout = QGridLayout()
-
-        # Add buttons to the grid layout
-        button_layout.addWidget(open_website_button, 0, 0)
-        button_layout.addWidget(save_button, 0, 1)
-        button_layout.addWidget(open_bo_folder_button, 1, 0)
-        button_layout.addWidget(open_settings_folder_button, 1, 1)
-
-        # Add the button layout to the main layout
-        main_layout.addLayout(button_layout)
-        dialog.setLayout(main_layout)
-
-        # Show the dialog
-        dialog.exec_()
-
-    def save_pasted_build_order(self, pasted_text: str, dialog):
-        """Save the pasted text as a build order JSON file."""
-
-        # Function to create a styled message box
-        def show_message_box(icon, title, text):
-            msg = QMessageBox(dialog)
-            msg.setIcon(icon)
-            msg.setWindowTitle(title)
-            msg.setText(text)
-            msg.setStyleSheet(
-                """
-                QMessageBox {
-                    background-color: black;
-                    color: white;
-                }
-                QMessageBox QLabel {
-                    background-color: black;
-                    color: white;
-                }
-                QMessageBox QPushButton {
-                    color: white;
-                    border: 1px solid white;
-                    padding: 4px;
-                    background-color: black;
-                }
-                """
-            )
-            msg.setFont(QFont(self.settings.layout.font_police, self.settings.layout.font_size))
-            msg.exec_()
-
-        # Check if any text was pasted
-        if not pasted_text.strip():
-            show_message_box(QMessageBox.Warning, "Error", "No text was pasted.")
-            return
-
-        # Extract the build order name from the JSON (if possible)
-        try:
-            json_data = json.loads(pasted_text)
-
-            # Check if the build order is valid
-            valid_bo, bo_error_msg = self.check_valid_build_order(json_data)
-            if not valid_bo:
-                show_message_box(QMessageBox.Warning, "Error", t("Invalid build order format") + f": {bo_error_msg}")
-                return
-
-            # Get name from the build order
-            if 'name' in json_data:
-                build_order_name = json_data['name']
-            else:
-                show_message_box(QMessageBox.Warning, "Error", "Build order is missing a name.")
-                return
-        except json.JSONDecodeError:
-            show_message_box(QMessageBox.Warning, "Error", "Could not parse the build order. Invalid JSON format.")
-            return
-
-        # Sanitize the filename: replace ALL spaces with "_" and remove dangerous characters
-        sanitized_name = build_order_name.replace(' ', '_')  # Replace ALL spaces with "_"
-        sanitized_name = re.sub(r'[\\/*?: "<>|]', '', sanitized_name)  # Remove dangerous characters
-        filename = f"{sanitized_name}.json"
-        filepath = os.path.join(self.directory_build_orders, filename)
-
-        # Check if a file with the same name already exists
-        if os.path.exists(filepath):
-            show_message_box(QMessageBox.Warning, "Error", t("Build order name already exists") + f": '{build_order_name}'")
-            return
-
-        # Save the text to a file
-        try:
-            with open(filepath, 'w', encoding='utf-8') as f:
-                f.write(pasted_text)
-
-            # Success popup
-            show_message_box(QMessageBox.Information, "Success", t("Build order saved as") + f": {filename}")
-
-            dialog.accept()  # Close the dialog
-            self.reload(update_settings=True)  # Reload build orders
-        except Exception as e:
-            show_message_box(QMessageBox.Critical, "Error", t("Failed to save build order") + f": {str(e)}")
 
     def get_hotkey_mouse_flag(self, name: str) -> bool:
         """Get the flag value for a global hotkey and/or mouse input.
@@ -1166,7 +719,7 @@ class RTSGameOverlay(QMainWindow):
             self.build_order_timer['time_sec'] = self.build_order_timer['time_sec_init'] + elapsed_time
             self.build_order_timer['time_int'] = int(floor(self.build_order_timer['time_sec']))
 
-            if self.selected_panel == PanelID.BUILD_ORDER:  # update build order panel display
+            if not self.hidden:  # update build order panel display
                 self.update_build_order_time_label()
 
                 # time was updated (or no valid note ID)
@@ -1192,47 +745,10 @@ class RTSGameOverlay(QMainWindow):
         """Function called on a timer for mouse and keyboard inputs."""
         self.update_mouse()  # update the mouse position
 
-        # next panel button
-        self.next_panel_button.hovering_show(self.is_mouse_in_roi_widget)
-
-        # hide panel button
-        self.hide_panel_button.hovering_show(self.is_mouse_in_roi_widget)
-
-        # build order hovering
-        if len(self.valid_build_orders) > 1:  # more than one build order for hovering color
-            # get build order ID for hovering
-            build_order_ids = self.build_order_selection.get_mouse_label_id(
-                self.mouse_x - self.x(), self.mouse_y - self.y()
-            )
-            hovering_id = (
-                build_order_ids[0]
-                if (
-                    (len(build_order_ids) == 2)
-                    and (build_order_ids[1] == 0)
-                    and (0 <= build_order_ids[0] < len(self.valid_build_orders))
-                )
-                else -1
-            )
-
-            # loop on the build order suggestions
-            for row_id in range(len(self.valid_build_orders)):
-                if row_id != self.build_order_selection_id:
-                    self.build_order_selection.set_color_label(
-                        row_id,
-                        0,
-                        color=(
-                            self.settings.layout.configuration.hovering_build_order_color
-                            if (row_id == hovering_id)
-                            else None
-                        ),
-                    )
-
         # keyboard action flags
         if (self.panel_config_hotkeys is None) or (not self.panel_config_hotkeys.isVisible()):
 
-            bo_panel_open = self.selected_panel == PanelID.BUILD_ORDER  # is build order panel open
-
-            # switch to next panel
+            # switch the overlay state (arrange <-> in-game)
             if self.get_hotkey_mouse_flag('next_panel'):
                 self.next_panel()
 
@@ -1240,23 +756,22 @@ class RTSGameOverlay(QMainWindow):
                 self.show_hide()
 
             # select previous step of the build order
-            if self.get_hotkey_mouse_flag('build_order_previous_step') and bo_panel_open:
+            if self.get_hotkey_mouse_flag('build_order_previous_step') and (not self.hidden):
                 self.build_order_previous_step()
 
             # select next step of the build order
-            if self.get_hotkey_mouse_flag('build_order_next_step') and bo_panel_open:
+            if self.get_hotkey_mouse_flag('build_order_next_step') and (not self.hidden):
                 self.build_order_next_step()
 
             if self.build_order_timer['available']:
                 # switch build order between timer/manual
-                if self.get_hotkey_mouse_flag('switch_timer_manual') and bo_panel_open:
+                if self.get_hotkey_mouse_flag('switch_timer_manual') and (not self.hidden):
                     self.switch_build_order_timer_manual()
 
                 # check if timer update can be applied
                 apply_timer_update = (
                     self.build_order_timer['use_timer']
                     and (not self.hidden)
-                    and bo_panel_open
                     and self.build_order_timer['steps']
                 )
 
@@ -1280,32 +795,23 @@ class RTSGameOverlay(QMainWindow):
                     if apply_timer_update:
                         self.reset_build_order_timer()
 
-        if self.is_mouse_in_window():
-            if self.selected_panel == PanelID.CONFIG:  # configuration specific buttons
-                self.config_quit_button.hovering_show(self.is_mouse_in_roi_widget)
-                self.config_save_button.hovering_show(self.is_mouse_in_roi_widget)
-                self.config_reload_button.hovering_show(self.is_mouse_in_roi_widget)
-                self.config_hotkey_button.hovering_show(self.is_mouse_in_roi_widget)
-                self.add_edit_build_orders_button.hovering_show(self.is_mouse_in_roi_widget)
-
-            elif self.selected_panel == PanelID.BUILD_ORDER:  # build order specific buttons
-                self.build_order_previous_button.hovering_show(self.is_mouse_in_roi_widget)
-                self.build_order_next_button.hovering_show(self.is_mouse_in_roi_widget)
-                if self.build_order_timer['available'] and self.build_order_timer['steps']:
-                    self.build_order_switch_timer_manual.hovering_show(self.is_mouse_in_roi_widget)
-                    if self.build_order_timer['use_timer']:
-                        self.build_order_start_stop_timer.hovering_show(self.is_mouse_in_roi_widget)
-                        self.build_order_reset_timer.hovering_show(self.is_mouse_in_roi_widget)
+        if (not self.hidden) and self.is_mouse_in_window():
+            self.build_order_previous_button.hovering_show(self.is_mouse_in_roi_widget)
+            self.build_order_next_button.hovering_show(self.is_mouse_in_roi_widget)
+            if self.build_order_timer['available'] and self.build_order_timer['steps']:
+                self.build_order_start_stop_timer.hovering_show(self.is_mouse_in_roi_widget)
 
     def show_hide(self):
-        """Show or hide the windows."""
+        """Show or hide the overlay (global hotkey)."""
         self.hidden = not self.hidden  # change the hidden state
 
-        # adapt opacity
         if self.hidden:
             self.setWindowOpacity(0.0)
+            self.hide()
         else:
+            self.show()
             self.setWindowOpacity(self.settings.layout.opacity)
+            self.update_position()
 
     def update_hotkeys(self):
         """Update the hotkeys and the settings file."""
@@ -1422,7 +928,7 @@ class RTSGameOverlay(QMainWindow):
         )
 
     def move_window(self, event):
-        """Move the window according to the mouse motion.
+        """Move the window according to the mouse motion (arrange state only).
 
         Parameters
         ----------
@@ -1447,72 +953,72 @@ class RTSGameOverlay(QMainWindow):
             self.settings.layout.upper_right_position = [widget_x_end(self), self.y()]
             self.unscaled_settings.layout.upper_right_position = [widget_x_end(self), self.y()]
 
-    def build_order_click_select(self, event):
-        """Check if a build order is being clicked.
-
-        Parameters
-        ----------
-        event    Mouse event.
-        """
-        if event.buttons() == Qt.LeftButton:  # pressing the left button
-            if len(self.valid_build_orders) >= 1:  # at least one build order
-                self.update_mouse()
-                build_order_ids = self.build_order_selection.get_mouse_label_id(
-                    self.mouse_x - self.x(), self.mouse_y - self.y()
-                )
-                if (
-                    (len(build_order_ids) == 2)
-                    and (build_order_ids[1] == 0)
-                    and (0 <= build_order_ids[0] < len(self.valid_build_orders))
-                ):
-                    if not self.select_build_order_id(build_order_ids[0]):
-                        print(f'Could not select build order with ID {build_order_ids[0]}.')
-
     def save_upper_corner_positions(self):
-        """Save of the upper left and right corner positions."""
+        """Save of the upper left and right corner positions (kept in sync with the settings)."""
         self.upper_left_position = [self.x(), self.y()]
         self.upper_right_position = [widget_x_end(self), self.y()]
+        self.settings.layout.upper_left_position = list(self.upper_left_position)
+        self.unscaled_settings.layout.upper_left_position = list(self.upper_left_position)
+        self.settings.layout.upper_right_position = list(self.upper_right_position)
+        self.unscaled_settings.layout.upper_right_position = list(self.upper_right_position)
 
     def update_position(self):
-        """Update the position to stick to the saved upper left/right corner."""
-        if self.settings.layout.overlay_on_right_side:
-            self.move(self.upper_right_position[0] - self.width(), self.upper_right_position[1])
+        """Update the position to stick to the saved upper left/right corner (read from the settings,
+        so that a window drag - which updates the settings - is never reverted)."""
+        layout = self.settings.layout
+        if layout.overlay_on_right_side:
+            self.move(layout.upper_right_position[0] - self.width(), layout.upper_right_position[1])
         else:
-            self.move(self.upper_left_position[0], self.upper_left_position[1])
+            self.move(layout.upper_left_position[0], layout.upper_left_position[1])
 
     def build_order_previous_step(self):
-        """Select the previous step of the build order (or update to -1 sec for timer feature)."""
-        if self.selected_panel == PanelID.BUILD_ORDER:
+        """Select the previous page of the build order (or update to -1 sec for timer feature)."""
+        if not self.hidden:
 
             if self.build_order_timer['use_timer']:  # update timer
                 self.build_order_timer['time_sec'] -= 1.0
                 self.build_order_timer['absolute_time_init'] += 1.0  # like the timer was started 1 sec later
                 self.build_order_timer['time_int'] = int(floor(self.build_order_timer['time_sec']))
                 self.update_build_order_time_label()
-            else:  # update step
+            else:  # update step: go back to the start of the previous page
+                build_order_content = self.selected_build_order['build_order']
+                rows = max(1, int(getattr(self.settings.layout.build_order, 'display_rows', 1)))
+
                 old_selected_build_order_step_id = self.selected_build_order_step_id
-                self.selected_build_order_step_id = max(
-                    0, min(self.selected_build_order_step_id - 1, self.selected_build_order_step_count - 1)
-                )
-                if old_selected_build_order_step_id != self.selected_build_order_step_id:
+                new_start = old_selected_build_order_step_id
+                if new_start > 0:
+                    lines = 0
+                    while (new_start > 0) and (lines < rows):
+                        new_start -= 1
+                        lines += len(build_order_content[new_start].get('notes', []) or [])
+                if new_start != old_selected_build_order_step_id:
+                    self.selected_build_order_step_id = new_start
                     self.update_build_order()  # update the rendering
 
     def build_order_next_step(self):
-        """Select the next step of the build order (or update to +1 sec for timer feature)."""
-        if self.selected_panel == PanelID.BUILD_ORDER:
+        """Select the next page of the build order (or update to +1 sec for timer feature)."""
+        if not self.hidden:
 
             if self.build_order_timer['use_timer']:  # update timer
                 self.build_order_timer['time_sec'] += 1.0
                 self.build_order_timer['absolute_time_init'] -= 1.0  # like the timer was started 1 sec earlier
                 self.build_order_timer['time_int'] = int(floor(self.build_order_timer['time_sec']))
                 self.update_build_order_time_label()
-            else:  # update step
+            else:  # update step: jump to the start of the next page
+                build_order_content = self.selected_build_order['build_order']
+
                 old_selected_build_order_step_id = self.selected_build_order_step_id
-                self.selected_build_order_step_id = max(
-                    0, min(self.selected_build_order_step_id + 1, self.selected_build_order_step_count - 1)
-                )
-                if old_selected_build_order_step_id != self.selected_build_order_step_id:
+                _, page_end = self._get_manual_page_range()
+                new_start = min(page_end + 1, len(build_order_content) - 1)
+                if new_start != old_selected_build_order_step_id:
+                    self.selected_build_order_step_id = new_start
                     self.update_build_order()  # update the rendering
+
+    def select_next_build_order(self):
+        """Select the next valid build order (global shortcut, uses the last manager filter)."""
+        if self.select_build_order_id(-1):
+            return self.select_build_order(self.last_filter_condition)
+        return False
 
     def select_build_order_id(self, build_order_id: int = -1) -> bool:
         """Select build order ID.
@@ -1538,15 +1044,15 @@ class RTSGameOverlay(QMainWindow):
             return True
         return False
 
-    def get_valid_build_orders(self, key_condition: dict = None):
-        """Get the names of the valid build orders (with search bar).
+    def get_valid_build_orders(self, key_condition: dict = None, search_string: str = ''):
+        """Get the names of the valid build orders (with search string from the manager).
 
         Parameters
         ----------
         key_condition   Dictionary with the keys to look for and their value (to consider as valid), None to skip it.
+        search_string   Search string from the manager search bar.
         """
         self.valid_build_orders = []  # reset the list
-        build_order_search_string = self.build_order_search.text()
 
         # only keep build orders with valid key conditions
         if key_condition is not None:
@@ -1560,11 +1066,9 @@ class RTSGameOverlay(QMainWindow):
 
         self.valid_key_build_orders_count = len(valid_key_build_orders) # Number of valid build orders for the selected keys
 
-        if build_order_search_string == '':  # no text added
-            return
-
         configuration = self.settings.layout.configuration
-        if build_order_search_string == ' ':  # special case: select any build order, up to the limit count
+        if search_string == '' or search_string == ' ':
+            # empty search (or single space): list all build orders for the current filter, up to the limit count
             for count, build_order in enumerate(valid_key_build_orders):
                 if count >= configuration.bo_list_max_count:
                     break
@@ -1574,7 +1078,7 @@ class RTSGameOverlay(QMainWindow):
             self.valid_build_orders = [
                 match[0]
                 for match in process.extractBests(
-                    build_order_search_string,
+                    search_string,
                     [build_order['name'] for build_order in valid_key_build_orders],
                     score_cutoff=configuration.bo_list_fuzz_score_cutoff,
                     limit=configuration.bo_list_max_count,
@@ -1582,7 +1086,7 @@ class RTSGameOverlay(QMainWindow):
             ]
 
         else:  # search by splitting the words
-            search_split = build_order_search_string.split(' ')  # split according to spaces
+            search_split = search_string.split(' ')  # split according to spaces
 
             for build_order in self.build_orders:
                 if len(self.valid_build_orders) >= configuration.bo_list_max_count:
@@ -1604,213 +1108,75 @@ class RTSGameOverlay(QMainWindow):
         if self.build_order_selection_id >= len(self.valid_build_orders):
             self.build_order_selection_id = max(0, len(self.valid_build_orders) - 1)
 
-    def obtain_build_order_search(self, key_condition: dict = None):
-        """Obtain the valid build order from search bar.
+    def select_build_order(self, key_condition: dict = None) -> bool:
+        """Select the requested valid build order and display it on the overlay.
 
         Parameters
         ----------
-        key_condition   Dictionary with the keys to look for and their value (to consider as valid), None to skip it.
+        key_condition   Dictionary with the keys to look for and their value, None to skip it.
+
+        Returns
+        -------
+        True if a valid build order was selected.
         """
-        self.get_valid_build_orders(key_condition)
-        valid_count = len(self.valid_build_orders)
-        self.build_order_selection.clear()
+        if len(self.valid_build_orders) == 0:
+            return False
 
-        if valid_count > 0:
-            assert 0 <= self.build_order_selection_id < valid_count
+        assert 0 <= self.build_order_selection_id < len(self.valid_build_orders)
+        self.selected_build_order_name = self.valid_build_orders[self.build_order_selection_id]
 
-            for i in range(valid_count):
-                if i == self.build_order_selection_id:
-                    self.build_order_selection.add_row_from_picture_line(
-                        parent=self,
-                        line=self.valid_build_orders[i],
-                        labels_settings=[
-                            QLabelSettings(
-                                text_bold=True, text_color=self.settings.layout.configuration.selected_build_order_color
-                            )
-                        ],
-                    )
-                else:
-                    self.build_order_selection.add_row_from_picture_line(parent=self, line=self.valid_build_orders[i])
-        else:
-            self.build_order_selection.add_row_from_picture_line(parent=self, line=self.get_no_build_order_text())
+        self.selected_build_order = None
+        for build_order in self.build_orders:
+            if (build_order['name'] == self.selected_build_order_name) and (
+                (key_condition is None) or check_build_order_key_values(build_order, key_condition)
+            ):
+                self.selected_build_order = build_order
+                break
+        if self.selected_build_order is None:
+            return False
 
-    def select_build_order(self, key_condition: dict = None):
-        """Select the requested valid build order.
+        self.selected_build_order_step_id = 0
+        self.selected_build_order_step_count = len(self.selected_build_order['build_order'])
+        assert self.selected_build_order_step_count > 0
 
-        Parameters
-        ----------
-        key_condition   Dictionary with the keys to look for and their value (to consider as valid), None to skip it.
-        """
-        self.build_order_selection.clear()
+        # obtain build order time notes
+        if self.build_order_timer['available']:
+            self.build_order_timer['steps'] = get_build_order_timer_steps(self.selected_build_order)
+            if not self.build_order_timer['steps']:  # non valid timer BO
+                self.deactivate_timer()
+            else:  # valid timer BO
+                self.build_order_timer['steps_ids'] = [0]
+                self.build_order_timer['last_steps_ids'] = []
+                self.reset_build_order_timer()
+                self.start_stop_build_order_timer(invert_run=False, run_value=False)
 
-        if len(self.valid_build_orders) > 0:  # valid
-            assert 0 <= self.build_order_selection_id < len(self.valid_build_orders)
-            self.selected_build_order_name = self.valid_build_orders[self.build_order_selection_id]
-
-            self.selected_build_order = None
-            for build_order in self.build_orders:
-                if (build_order['name'] == self.selected_build_order_name) and check_build_order_key_values(
-                    build_order, key_condition
-                ):
-                    self.selected_build_order = build_order
-                    break
-            assert self.selected_build_order is not None
-
-            self.selected_build_order_step_id = 0
-            self.selected_build_order_step_count = len(self.selected_build_order['build_order'])
-            assert self.selected_build_order_step_count > 0
-
-            self.build_order_search.setText('')
-            self.build_order_selection.add_row_from_picture_line(
-                parent=self,
-                line='Selected: ' + self.selected_build_order_name,
-                labels_settings=[
-                    QLabelSettings(
-                        text_bold=True, text_color=self.settings.layout.configuration.selected_build_order_color
-                    )
-                ],
-            )
-
-            # obtain build order time notes
-            if self.build_order_timer['available']:
-                self.build_order_timer['steps'] = get_build_order_timer_steps(self.selected_build_order)
-                if not self.build_order_timer['steps']:  # non valid timer BO
-                    self.deactivate_timer()
-                else:  # valid timer BO
-                    self.build_order_timer['steps_ids'] = [0]
-                    self.build_order_timer['last_steps_ids'] = []
-                    self.reset_build_order_timer()
-                    self.start_stop_build_order_timer(invert_run=False, run_value=False)
-
-        else:  # not valid
-            self.selected_build_order = None
-            self.selected_build_order_name = None
-            self.selected_build_order_step_count = 0
-            self.selected_build_order_step_id = -1
-            self.build_order_selection.clear()
-            self.build_order_selection.add_row_from_picture_line(parent=self, line='No valid build order found.')
-        self.build_order_search.clearFocus()
+        self.update_build_order()  # display the selected build order (both states)
+        return True
 
     def hide_elements(self):
         """Hide elements."""
-
-        # configuration buttons
-        self.next_panel_button.hide()
-        self.hide_panel_button.hide()
-
-        self.config_quit_button.hide()
-        self.config_save_button.hide()
-        self.config_reload_button.hide()
-        self.config_hotkey_button.hide()
-        self.add_edit_build_orders_button.hide()
-
         self.build_order_step_time.hide()
         self.build_order_previous_button.hide()
         self.build_order_next_button.hide()
-        if self.settings.timer_available:
-            self.build_order_switch_timer_manual.hide()
+        if self.build_order_start_stop_timer is not None:
             self.build_order_start_stop_timer.hide()
-            self.build_order_reset_timer.hide()
-
-        # police, scaling combo
-        self.font_size_input.hide()
-        self.scaling_input.hide()
-
-        # search build order
-        self.build_order_title.hide()
-        self.build_order_search.hide()
-        self.build_order_selection.hide()
+        self.build_order_hide_button.hide()
 
         # display build order
         self.build_order_resources.hide()
         self.build_order_notes.hide()
 
-    def update_build_order_display(self):
-        """Update the build order search matching display."""
-        pass  # will be implemented in daughter classes
-
-    def enter_key_actions(self):
-        """Actions performed when pressing the Enter key"""
-        pass  # will be implemented in daughter classes
-
-    def config_panel_layout(self):
-        """Layout of the configuration panel."""
-        if self.selected_panel != PanelID.CONFIG:
-            return
-
-        # save corner position
-        self.save_upper_corner_positions()
-
-        # show elements
-        self.config_quit_button.show()
-        self.config_save_button.show()
-        self.config_reload_button.show()
-        self.config_hotkey_button.show()
-        self.add_edit_build_orders_button.show()
-        self.font_size_input.show()
-        self.scaling_input.show()
-        self.next_panel_button.show()
-        self.hide_panel_button.show()
-        self.build_order_title.show()
-        self.build_order_search.show()
-        self.build_order_selection.show()
-
-        # configuration buttons
+    def window_color_position_initialization(self):
+        """Main window color and position initialization (common to constructor and reload)."""
         layout = self.settings.layout
-        border_size = layout.border_size
-        horizontal_spacing = layout.horizontal_spacing
-        action_button_size = layout.action_button_size
-        action_button_spacing = layout.action_button_spacing
+        color_background = layout.color_background
 
-        next_x = border_size
-        self.config_quit_button.move(next_x, border_size)
-        next_x += action_button_size + action_button_spacing
-        self.config_save_button.move(next_x, border_size)
-        next_x += action_button_size + action_button_spacing
-        self.config_reload_button.move(next_x, border_size)
-        next_x += action_button_size + action_button_spacing
-        self.config_hotkey_button.move(next_x, border_size)
-        next_x += action_button_size + action_button_spacing
-        self.add_edit_build_orders_button.move(next_x, border_size)
-        next_x += action_button_size + horizontal_spacing
-        self.font_size_input.move(next_x, border_size)
-        next_x += self.font_size_input.width() + horizontal_spacing
-        self.scaling_input.move(next_x, border_size)
-        next_x += self.scaling_input.width() + horizontal_spacing
-        self.hide_panel_button.move(next_x, border_size)
-        next_x += self.hide_panel_button.width() + horizontal_spacing
-        self.next_panel_button.move(next_x, border_size)
+        # color and opacity
+        set_background_opacity(self, color_background, layout.opacity)
 
-    def config_panel_layout_resize_move(self):
-        """Layout of the configuration panel (resizing and moving to correct location)."""
-        if self.selected_panel != PanelID.CONFIG:
-            return
-
-        border_size = self.settings.layout.border_size
-        horizontal_spacing = self.settings.layout.horizontal_spacing
-
-        max_x = max(
-            self.next_panel_button.x_end(),
-            widget_x_end(self.build_order_search),
-            self.build_order_selection.x() + self.build_order_selection.row_max_width,
-        )
-
-        max_y = max(
-            widget_y_end(self.build_order_search),
-            self.build_order_selection.y() + self.build_order_selection.row_total_height,
-        )
-
-        # resize main window
-        self.resize(max_x + border_size, max_y + border_size)
-
-        # next panel and hide panel buttons on top right corner
-        self.next_panel_button.move(self.width() - border_size - self.next_panel_button.width(), border_size)
-
-        self.hide_panel_button.move(
-            self.next_panel_button.x() - horizontal_spacing - self.hide_panel_button.width(), self.next_panel_button.y()
-        )
-
-        # update position (in case the size changed)
+        # upper left and right positions
+        self.upper_left_position = [layout.upper_left_position[0], layout.upper_left_position[1]]
+        self.upper_right_position = [layout.upper_right_position[0], layout.upper_right_position[1]]
         self.update_position()
 
     def update_build_order(self):
@@ -1820,7 +1186,7 @@ class RTSGameOverlay(QMainWindow):
         self.build_order_notes.clear()
 
         if self.selected_build_order is None:  # no build order selected
-            self.build_order_notes.add_row_from_picture_line(parent=self, line='No build order selected.')
+            self.build_order_notes.add_row_from_picture_line(parent=self, line=t('No build order selected.'))
 
         elif 'build_order' not in self.selected_build_order:  # only display notes
             assert 'notes' in self.selected_build_order
@@ -1838,8 +1204,30 @@ class RTSGameOverlay(QMainWindow):
             else:
                 self.update_build_order_step_label()
 
+    def _get_manual_page_range(self) -> (int, int):
+        """Get the range of build order steps displayed as one page in the manual mode.
+
+        The page starts at the current step and accumulates steps until the requested
+        count of note lines ('display_rows' setting) is reached.
+
+        Returns
+        -------
+        (page start step ID, page end step ID), both inclusive.
+        """
+        build_order_content = self.selected_build_order['build_order']
+        count = len(build_order_content)
+        rows = max(1, int(getattr(self.settings.layout.build_order, 'display_rows', 1)))
+
+        start = min(max(0, self.selected_build_order_step_id), count - 1)
+        lines = len(build_order_content[start].get('notes', []) or [])
+        end = start
+        while (end + 1 < count) and (lines < rows):
+            end += 1
+            lines += len(build_order_content[end].get('notes', []) or [])
+        return start, end
+
     def get_build_order_selected_steps_and_ids(self) -> (list, list):
-        """Get the build order timer steps to display.
+        """Get the build order steps to display.
 
         Returns
         -------
@@ -1853,13 +1241,12 @@ class RTSGameOverlay(QMainWindow):
                 self.build_order_timer['steps'], self.build_order_timer['steps_ids']
             )
         else:
-            selected_build_order_content = self.selected_build_order['build_order']
-
-            # select current step
-            assert 0 <= self.selected_build_order_step_id < self.selected_build_order_step_count
-            selected_steps_ids = [0]
-            selected_steps = [selected_build_order_content[self.selected_build_order_step_id]]
-            assert selected_steps[0] is not None
+            # manual mode: display one page of steps (up to 'display_rows' note lines)
+            build_order_content = self.selected_build_order['build_order']
+            start, end = self._get_manual_page_range()
+            selected_steps = build_order_content[start : end + 1]
+            assert len(selected_steps) > 0
+            selected_steps_ids = list(range(len(selected_steps)))
         assert (len(selected_steps) > 0) and (len(selected_steps_ids) > 0)
 
         return selected_steps, selected_steps_ids
@@ -1904,38 +1291,35 @@ class RTSGameOverlay(QMainWindow):
                 self.build_order_notes.add_row_from_picture_line(parent=self, line=line, emphasis_flag=emphasis_flag)
 
     def build_order_panel_layout(self):
-        """Layout of the Build order panel."""
-        if self.selected_panel != PanelID.BUILD_ORDER:
-            return
+        """Layout of the build order display (used for both overlay states):
+        step label at the left edge, buttons at the right edge."""
 
         # show elements
-        if (self.selected_build_order is not None) and ('build_order' in self.selected_build_order):
+        self.build_order_notes.show()
+        if self.show_resources:
+            self.build_order_resources.show()
+        if self.selected_build_order is not None:
             self.build_order_step_time.show()
             self.build_order_previous_button.show()
             self.build_order_next_button.show()
-            if self.build_order_timer['available'] and self.build_order_timer['steps']:
-                self.build_order_switch_timer_manual.show()
-                if self.build_order_timer['use_timer']:
-                    self.build_order_start_stop_timer.show()
-                    self.build_order_reset_timer.show()
-        self.next_panel_button.show()
-        self.hide_panel_button.show()
-        self.build_order_notes.show()
-
-        # show elements
-        if self.show_resources:
-            self.build_order_resources.show()
+            self.build_order_hide_button.show()
+            # start/stop timer button only for build orders with time parameters
+            show_start_stop = (
+                self.build_order_start_stop_timer is not None
+                and self.build_order_timer['available']
+                and self.build_order_timer['steps']
+            )
+            if show_start_stop:
+                self.build_order_start_stop_timer.show()
 
         # size and position
         layout = self.settings.layout
         border_size = layout.border_size
         vertical_spacing = layout.vertical_spacing
-        horizontal_spacing = layout.horizontal_spacing
         action_button_size = layout.action_button_size
         action_button_spacing = layout.action_button_spacing
         bo_next_tab_spacing = layout.build_order.bo_next_tab_spacing
 
-        # action buttons
         next_y = border_size + action_button_size + vertical_spacing
 
         if self.selected_build_order is not None:
@@ -1948,17 +1332,19 @@ class RTSGameOverlay(QMainWindow):
             next_y += self.build_order_resources.row_total_height + vertical_spacing
 
         # maximum width
-        buttons_count = 4  # previous step + next step + hide panel + next panel
-        if self.build_order_timer['available']:
-            buttons_count += (
-                3 if self.build_order_timer['use_timer'] else 1
-            )  # switch timer-manual (+ start/stop + reset timer)
+        buttons_count = 3  # previous step + next step + hide button
+        show_start_stop = (
+            self.build_order_start_stop_timer is not None
+            and self.build_order_timer['available']
+            and self.build_order_timer['steps']
+        )
+        if show_start_stop:
+            buttons_count += 1
         max_x = max(
             (
                 self.build_order_step_time.width()
                 + buttons_count * action_button_size
-                + horizontal_spacing
-                + (buttons_count - 2) * action_button_spacing
+                + (buttons_count - 1) * action_button_spacing
                 + bo_next_tab_spacing
             ),
             self.build_order_resources.row_max_width,
@@ -1975,67 +1361,22 @@ class RTSGameOverlay(QMainWindow):
 
         button_space_size = action_button_size + action_button_spacing
 
-        # fixed top right corner
-        if layout.overlay_on_right_side:
-            next_x = self.width() - border_size - action_button_size
-            self.next_panel_button.move(next_x, border_size)
+        # buttons at the right edge (from right to left: next, previous, start/stop timer, hide)
+        next_x = self.width() - border_size - action_button_size
+        self.build_order_next_button.move(next_x, border_size)
 
+        next_x -= button_space_size
+        self.build_order_previous_button.move(next_x, border_size)
+
+        next_x -= button_space_size
+        if show_start_stop:
+            self.build_order_start_stop_timer.move(next_x, border_size)
             next_x -= button_space_size
-            self.hide_panel_button.move(next_x, border_size)
 
-            if self.selected_build_order is not None:
-                next_x -= action_button_size + bo_next_tab_spacing
+        self.build_order_hide_button.move(next_x, border_size)
 
-                if self.build_order_timer['available'] and self.build_order_timer['steps']:
-                    self.build_order_switch_timer_manual.move(next_x, border_size)
-                    next_x -= button_space_size
-
-                    if self.build_order_timer['use_timer']:
-                        self.build_order_reset_timer.move(next_x, border_size)
-                        next_x -= button_space_size
-
-                        self.build_order_start_stop_timer.move(next_x, border_size)
-                        next_x -= button_space_size
-
-                self.build_order_next_button.move(next_x, border_size)
-                next_x -= button_space_size
-
-                self.build_order_previous_button.move(next_x, border_size)
-                next_x -= self.build_order_step_time.width() + action_button_spacing
-
-                self.build_order_step_time.move(next_x, border_size)
-
-        # fixed top left corner
-        else:
-            next_x = border_size
-
-            if self.selected_build_order is not None:
-                self.build_order_step_time.move(next_x, border_size)
-                next_x += self.build_order_step_time.width() + action_button_spacing
-
-                self.build_order_previous_button.move(next_x, border_size)
-                next_x += button_space_size
-
-                self.build_order_next_button.move(next_x, border_size)
-
-                if self.build_order_timer['available'] and self.build_order_timer['steps']:
-                    next_x += button_space_size
-
-                    if self.build_order_timer['use_timer']:
-                        self.build_order_start_stop_timer.move(next_x, border_size)
-                        next_x += button_space_size
-
-                        self.build_order_reset_timer.move(next_x, border_size)
-                        next_x += button_space_size
-
-                    self.build_order_switch_timer_manual.move(next_x, border_size)
-
-                next_x += action_button_size + bo_next_tab_spacing
-
-            self.hide_panel_button.move(next_x, border_size)
-            next_x += button_space_size
-
-            self.next_panel_button.move(next_x, border_size)
+        # step label at the left edge
+        self.build_order_step_time.move(border_size, border_size)
 
         # position update to stay with the same upper right corner position
         self.update_position()
@@ -2046,13 +1387,9 @@ class RTSGameOverlay(QMainWindow):
             self.build_order_timer['use_timer'] = not self.build_order_timer['use_timer']
 
             if self.build_order_timer['use_timer']:  # timer feature
-                self.build_order_start_stop_timer.show()
-                self.build_order_reset_timer.show()
                 self.update_build_order_time_label()
             else:  # manual step selection
                 self.build_order_timer['run_timer'] = False
-                self.build_order_start_stop_timer.hide()
-                self.build_order_reset_timer.hide()
                 self.update_build_order_step_label()
 
             self.build_order_timer['last_time_label'] = ''
@@ -2092,16 +1429,52 @@ class RTSGameOverlay(QMainWindow):
 
                 self.update_build_order()
 
+    def overlay_start_timer_button(self):
+        """Action of the overlay start/stop timer button (switch to timer mode first if needed)."""
+        if self.build_order_timer['use_timer']:
+            self.start_stop_build_order_timer(invert_run=True)
+        elif self.build_order_timer['available'] and self.build_order_timer['steps']:
+            self.switch_build_order_timer_manual()  # switch to timer mode
+            self.start_stop_build_order_timer(invert_run=False, run_value=True)
+
+    def hide_button_clicked(self):
+        """Action of the overlay hide button: two clicks required, to avoid hiding it by mistake."""
+        if self.hide_button_armed:
+            self.disarm_hide_button()
+            self.show_hide()
+        else:
+            self.hide_button_armed = True
+            self.build_order_hide_button.button.setToolTip(t('Click again to hide'))
+            self.build_order_hide_button.button.setStyleSheet('border: 2px solid #e05555; border-radius: 4px;')
+            QTimer.singleShot(2000, self.disarm_hide_button)
+
+    def disarm_hide_button(self):
+        """Disarm the hide button (restore its normal look)."""
+        if self.hide_button_armed:
+            self.hide_button_armed = False
+            self.build_order_hide_button.button.setToolTip(t('Click twice to hide'))
+            self.build_order_hide_button.button.setStyleSheet('')
+
+    def shutdown(self):
+        """Stop this overlay and release its global hotkeys (before discarding it, e.g. game switch)."""
+        self.stop_application = True
+        self.hidden = True
+        self.setWindowOpacity(0.0)
+        self.hide()
+        self.keyboard_mouse.shutdown()
+
     def update_build_order_step_label(self):
-        """Update the build order step label."""
-        if self.selected_panel == PanelID.BUILD_ORDER:
+        """Update the build order step label (shows the last row of the displayed page)."""
+        if not self.hidden:
+            _, page_end = self._get_manual_page_range()
             self.build_order_step_time.setText(
-                f'{t("Step")}: {self.selected_build_order_step_id + 1}/{self.selected_build_order_step_count}'
+                f'{t("Step")}: {page_end + 1}/{self.selected_build_order_step_count}'
             )
+            self.build_order_step_time.adjustSize()  # refresh width to avoid overlapping the buttons
 
     def update_build_order_time_label(self):
         """Update the build order time label."""
-        if self.selected_panel == PanelID.BUILD_ORDER:
+        if not self.hidden:
 
             # check if time is negative
             if self.build_order_timer['time_int'] < 0:
@@ -2120,6 +1493,7 @@ class RTSGameOverlay(QMainWindow):
             if time_label != self.build_order_timer['last_time_label']:
                 # update label and layout
                 self.build_order_step_time.setText(time_label)
+                self.build_order_step_time.adjustSize()  # refresh width to avoid overlapping the buttons
                 self.build_order_panel_layout()
 
                 self.build_order_timer['last_time_label'] = time_label

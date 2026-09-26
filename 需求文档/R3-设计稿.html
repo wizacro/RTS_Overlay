@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>R3 设计稿 v2 — 管理器 + 悬浮窗 双窗口改版</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  /* ============ 主题变量 ============ */
+  body.theme-light {
+    --page-bg: #e8eaed; --page-text: #333;
+    --win-bg: #fdfdfd; --titlebar-a: #e8e9eb; --titlebar-b: #d7d9dd; --titlebar-text: #333;
+    --border-strong: #9a9a9a; --border-mid: #bbb; --border-soft: #ddd;
+    --guide-bg: #f0f1f3; --muted: #666; --faint: #888;
+    --btn-bg: #f7f7f7; --btn-border: #9a9a9a; --btn-text: #222;
+    --pri-bg: #d8e7fb; --pri-border: #4a86d8; --pri-text: #14406e;
+    --paste-bg: #fff; --paste-text: #999;
+    --list-border: #bbb; --item-border: #e4e4e4; --item-text: #333; --sel-bg: #e3edfb;
+    --tabbar-bg: #ececee; --tab-text: #777; --tab-on-bg: #fdfdfd; --tab-on-text: #14406e;
+    --seg-bg: #eee; --seg-text: #777; --seg-on-bg: #d8e7fb; --seg-on-text: #14406e;
+    --track: #bbb; --knob: #555;
+    --th-bg: #ececec; --table-border: #bbb; --td-text: #333;
+    --note-bg: #e7f0fb; --note-border: #9fc1e8; --note-text: #2a4a6b;
+    --flowcard-bg: #f4f5f7; --flowcard-border: #bbb; --flow-d: #777;
+    --overlay-note-bg: #eef2f7;
+  }
+  body.theme-dark {
+    --page-bg: #2b2b2b; --page-text: #ddd;
+    --win-bg: #000; --titlebar-a: #3c3c3c; --titlebar-b: #2e2e2e; --titlebar-text: #eee;
+    --border-strong: #888; --border-mid: #666; --border-soft: #333;
+    --guide-bg: #101010; --muted: #999; --faint: #777;
+    --btn-bg: #161616; --btn-border: #777; --btn-text: #eee;
+    --pri-bg: #1d3a5f; --pri-border: #4a9eff; --pri-text: #eee;
+    --paste-bg: #000; --paste-text: #777;
+    --list-border: #666; --item-border: #222; --item-text: #ccc; --sel-bg: #14202e;
+    --tabbar-bg: #0c0c0c; --tab-text: #999; --tab-on-bg: #000; --tab-on-text: #fff;
+    --seg-bg: #111; --seg-text: #999; --seg-on-bg: #1d3a5f; --seg-on-text: #fff;
+    --track: #444; --knob: #ccc;
+    --th-bg: #1a1a1a; --table-border: #444; --td-text: #ccc;
+    --note-bg: #14202e; --note-border: #2c4a6e; --note-text: #b8cfe8;
+    --flowcard-bg: #1a1a1a; --flowcard-border: #555; --flow-d: #888;
+    --overlay-note-bg: #101820;
+  }
+  body {
+    background: var(--page-bg); color: var(--page-text);
+    font-family: "Microsoft YaHei", "微软雅黑", sans-serif;
+    padding: 24px; font-size: 14px;
+    transition: background .2s, color .2s;
+  }
+  .page { max-width: 1180px; margin: 0 auto; }
+  h1 { font-size: 22px; color: var(--page-text); margin-bottom: 4px; }
+  .sub { color: var(--muted); margin-bottom: 16px; font-size: 13px; }
+  h2 { font-size: 17px; color: var(--page-text); margin: 34px 0 6px; border-left: 4px solid #4a86d8; padding-left: 10px; }
+  .desc { color: var(--muted); font-size: 13px; margin-bottom: 12px; line-height: 1.7; }
+
+  /* 页面级主题预览切换 */
+  .previewbar { position: sticky; top: 0; z-index: 50; display: flex; gap: 10px; align-items: center;
+    padding: 10px 14px; margin: 0 0 8px; border-radius: 8px;
+    background: var(--win-bg); border: 1px solid var(--border-strong); box-shadow: 0 4px 14px rgba(0,0,0,.25); }
+  .previewbar .t { font-size: 13px; font-weight: bold; }
+  .previewbar .seg { margin-left: auto; }
+
+  /* ===== 流程条 ===== */
+  .flow { display: flex; gap: 8px; align-items: stretch; margin: 10px 0 6px; }
+  .flow .step { flex: 1; background: var(--flowcard-bg); border: 1px solid var(--flowcard-border);
+    border-radius: 6px; padding: 10px 12px; }
+  .flow .num { display: inline-block; width: 22px; height: 22px; border-radius: 50%;
+    background: #4a86d8; color: #fff; text-align: center; line-height: 22px; font-weight: bold; margin-right: 6px; }
+  .flow .step b { color: var(--page-text); }
+  .flow .step .d { display: block; color: var(--flow-d); font-size: 12px; margin-top: 5px; line-height: 1.5; }
+  .flow .arrow { align-self: center; color: var(--faint); font-size: 20px; }
+
+  /* ===== 窗口模拟 ===== */
+  .window { width: 780px; margin: 0 auto; background: var(--win-bg); border: 1px solid var(--border-strong);
+    border-radius: 8px; overflow: hidden; box-shadow: 0 8px 30px rgba(0,0,0,.35); }
+  .titlebar { background: linear-gradient(var(--titlebar-a), var(--titlebar-b)); color: var(--titlebar-text);
+    padding: 7px 12px; font-size: 13px; display: flex; justify-content: space-between; align-items: center; }
+  .titlebar .btns { color: var(--muted); letter-spacing: 6px; }
+  .guide { display: flex; align-items: center; gap: 6px; padding: 9px 12px;
+    background: var(--guide-bg); border-bottom: 1px solid var(--border-soft); font-size: 13px; }
+  .guide .g { color: var(--page-text); white-space: nowrap; }
+  .guide .g.done { color: #2e7d32; }
+  .guide .g .n { display: inline-block; width: 18px; height: 18px; border-radius: 50%;
+    background: var(--seg-bg); color: var(--muted); text-align: center; line-height: 18px; margin-right: 4px; font-size: 12px; }
+  .guide .g.done .n { background: #2e7d32; color: #fff; }
+  .guide .g.cur .n { background: #4a86d8; color: #fff; }
+  .guide .sep { color: var(--faint); }
+  .guide .help { margin-left: auto; border: 1px solid var(--btn-border); color: var(--btn-text); border-radius: 4px;
+    padding: 2px 9px; font-size: 12px; background: var(--btn-bg); }
+  .tabs { display: flex; border-bottom: 1px solid var(--border-mid); background: var(--tabbar-bg); }
+  .tabs .tab { padding: 9px 26px; color: var(--tab-text); font-size: 14px; border-right: 1px solid var(--border-soft); }
+  .tabs .tab.on { color: var(--tab-on-text); background: var(--tab-on-bg); border-bottom: 2px solid #4a86d8; font-weight: bold; }
+  .body { padding: 14px 16px; }
+
+  .btn { display: inline-flex; align-items: center; gap: 6px; background: var(--btn-bg);
+    border: 1px solid var(--btn-border); color: var(--btn-text); padding: 6px 12px; border-radius: 4px; font-size: 13px; }
+  .btn img { height: 16px; }
+  .btn.primary { background: var(--pri-bg); border-color: var(--pri-border); color: var(--pri-text); }
+  .btn img.big { height: 20px; }
+  .pastebox { border: 1px solid var(--border-mid); background: var(--paste-bg); color: var(--paste-text);
+    border-radius: 4px; height: 100px; padding: 9px; font-size: 13px; line-height: 1.6; }
+  .row { display: flex; gap: 10px; align-items: center; margin-top: 12px; flex-wrap: wrap; }
+  .combo { display: inline-flex; align-items: center; gap: 7px; border: 1px solid var(--btn-border);
+    background: var(--btn-bg); padding: 4px 10px; border-radius: 4px; color: var(--btn-text); font-size: 13px; }
+  .combo img { height: 18px; }
+  .combo .caret { color: var(--faint); font-size: 11px; }
+  .search { flex: 1; border: 1px solid var(--btn-border); background: var(--paste-bg); color: var(--btn-text);
+    padding: 6px 10px; border-radius: 4px; font-size: 13px; min-width: 200px; }
+  .list { border: 1px solid var(--list-border); border-radius: 4px; margin-top: 10px; }
+  .list .item { padding: 8px 12px; border-bottom: 1px solid var(--item-border); color: var(--item-text);
+    font-size: 13px; display: flex; justify-content: space-between; }
+  .list .item:last-child { border-bottom: none; }
+  .list .item.sel { color: var(--pri-text); font-weight: bold; background: var(--sel-bg); }
+  .list .item .tag { color: var(--faint); font-size: 12px; }
+  .lbl { color: var(--muted); font-size: 13px; }
+  .sec { border-top: 1px dashed var(--border-soft); margin-top: 16px; padding-top: 12px; }
+  .sec .st { color: var(--page-text); font-size: 13px; font-weight: bold; margin-bottom: 10px; }
+  .seg { display: inline-flex; border: 1px solid var(--btn-border); border-radius: 4px; overflow: hidden; }
+  .seg span { padding: 5px 14px; font-size: 13px; color: var(--seg-text); background: var(--seg-bg); cursor: pointer; }
+  .seg span.on { background: var(--seg-on-bg); color: var(--seg-on-text); font-weight: bold; }
+  .slider { display: inline-flex; align-items: center; gap: 8px; }
+  .slider .track { width: 110px; height: 4px; background: var(--track); border-radius: 2px; position: relative; }
+  .slider .track i { position: absolute; left: 62%; top: -4px; width: 12px; height: 12px; background: var(--knob); border-radius: 50%; }
+  .swatch { width: 22px; height: 22px; border: 1px solid var(--border-strong); border-radius: 3px; background: #000; display: inline-block; vertical-align: middle; }
+  .bottombar { display: flex; gap: 10px; padding: 10px 16px; border-top: 1px solid var(--border-soft); background: var(--guide-bg); }
+  .bottombar .spacer { flex: 1; }
+
+  /* 悬浮窗（悬浮窗自身外观与管理器主题无关，保持深色） */
+  .overlaywrap { display: flex; gap: 40px; justify-content: center; align-items: flex-start; flex-wrap: wrap; }
+  .center { text-align: center; }
+  .ov { width: 380px; background: #000; border: 1px solid #fff; position: relative; box-shadow: 0 8px 30px rgba(0,0,0,.45); }
+  .ov .content { padding: 10px 12px; color: #fff; }
+  .btnrow { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .iconbtn { border: 1px solid #fff; background: #111; border-radius: 4px; padding: 4px 6px; display: inline-flex; }
+  .iconbtn img { height: 20px; }
+  .resline { display: flex; gap: 12px; align-items: center; color: #fff; font-size: 14px; }
+  .resline img { height: 20px; }
+  .resline .gap { flex: 1; }
+  .stepcnt { color: #aaa; font-size: 12px; }
+  .botitle { color: #fff; font-weight: bold; font-size: 16px; margin: 6px 0; }
+  .bostep { color: #ccc; font-size: 14px; line-height: 1.8; text-align: left; }
+  .bostep.cur { color: #ffe14d; font-weight: bold; }
+  .drag-hint { position: absolute; inset: -14px; border: 2px dashed #4a86d8; border-radius: 10px; pointer-events: none; }
+  .drag-hint .lab { position: absolute; top: -26px; left: 50%; transform: translateX(-50%);
+    background: #4a86d8; color: #fff; font-size: 12px; padding: 3px 10px; border-radius: 10px; white-space: nowrap; }
+  .passthru { position: absolute; inset: -14px; border: 2px dashed #e05555; border-radius: 10px; pointer-events: none; }
+  .passthru .lab { position: absolute; top: -26px; left: 50%; transform: translateX(-50%);
+    background: #e05555; color: #fff; font-size: 12px; padding: 3px 10px; border-radius: 10px; white-space: nowrap; }
+  .ov .clickable { outline: 2px solid #2dcf5e; outline-offset: 2px; border-radius: 4px; }
+  .ovlegend { color: var(--muted); font-size: 13px; margin-top: 10px; line-height: 1.7; }
+  .ovlegend b { color: var(--page-text); }
+
+  table { border-collapse: collapse; width: 100%; margin-top: 8px; font-size: 13px; }
+  th, td { border: 1px solid var(--table-border); padding: 8px 10px; text-align: left; }
+  th { background: var(--th-bg); color: var(--page-text); }
+  td { color: var(--td-text); }
+  .note { margin-top: 26px; padding: 12px 14px; background: var(--note-bg); border: 1px solid var(--note-border);
+    border-radius: 6px; color: var(--note-text); font-size: 13px; line-height: 1.8; }
+  .mt6 { margin-top: 6px; }
+</style>
+</head>
+<body class="theme-light">
+<div class="page">
+  <h1>R3 设计稿 v2 — 管理器 + 悬浮窗 双窗口改版</h1>
+  <div class="sub">确认用设计稿（HTML 按工具真实风格还原）· v2：新增浅色主题、从剪贴板导入、悬浮窗双状态统一按钮 · 2026-09-26</div>
+
+  <div class="previewbar">
+    <span class="t">预览主题（也可以直接点下面管理器里的"界面主题"开关，效果相同）：</span>
+    <span class="seg" id="pageTheme">
+      <span data-t="light" class="on">浅色</span><span data-t="dark">深色</span>
+    </span>
+  </div>
+
+  <!-- ============ 流程 ============ -->
+  <h2>〇、整体操作流程（线性）</h2>
+  <div class="desc">管理器承载全部管理操作（支持浅色/深色主题，默认浅色）；悬浮窗只负责展示与步进。游戏内操作 = 悬浮窗按钮（开始计时/上一步/下一步）+ 全局快捷键（不变）。</div>
+  <div class="flow">
+    <div class="step"><span class="num">1</span><b>导入建造顺序</b><span class="d">管理器·导入页<br>从剪贴板导入 / 粘贴 JSON</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><span class="num">2</span><b>选择与配置</b><span class="d">管理器·展示页<br>选阵营、搜建造顺序、调外观</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><span class="num">3</span><b>布置悬浮窗</b><span class="d">开启悬浮窗（布置模式）<br>整窗拖动到合适位置，可先试按按钮</span></div>
+    <div class="arrow">→</div>
+    <div class="step"><span class="num">4</span><b>进入游戏</b><span class="d">管理器切到"游戏中"状态<br>点按钮或用快捷键推进</span></div>
+  </div>
+
+  <!-- ============ 管理器·导入页 ============ -->
+  <h2>一、管理器 · 导入标签页</h2>
+  <div class="desc">普通窗口（不置顶，浅色主题）。新增<b>从剪贴板导入</b>：先在网站复制建造顺序，回管理器一键导入。</div>
+  <div class="window">
+    <div class="titlebar"><span>RTS Overlay 管理器</span><span class="btns">— □ ×</span></div>
+    <div class="guide">
+      <span class="g done"><span class="n">✓</span>导入建造顺序</span><span class="sep">→</span>
+      <span class="g done"><span class="n">✓</span>选择与配置</span><span class="sep">→</span>
+      <span class="g cur"><span class="n">3</span>开启悬浮窗</span>
+      <span class="help">? 帮助</span>
+    </div>
+    <div class="tabs"><span class="tab on">导入</span><span class="tab">展示</span></div>
+    <div class="body">
+      <div class="lbl">从剪贴板一键导入，或在下方粘贴建造顺序文本（RTS Overlay 格式）：</div>
+      <div class="pastebox mt6">在此粘贴你的建造顺序 JSON 文本……<br>访问 rts-overlay.github.io 可自行设计，或获取第三方网站链接</div>
+      <div class="row">
+        <span class="btn primary"><img class="big" src="../docs/assets/common/action_button/feather.webp">从剪贴板导入</span>
+        <span class="btn"><img class="big" src="../docs/assets/common/action_button/save.webp">导入并保存</span>
+        <span class="btn">打开建造顺序文件夹</span>
+        <span class="btn">打开 rts-overlay.github.io</span>
+      </div>
+      <div class="lbl mt6">剪贴板内容格式正确则直接导入保存；为空或格式不符时弹窗提示，不影响现有文件。导入成功后自动出现在"展示"页的选择列表中。</div>
+    </div>
+    <div class="bottombar">
+      <span class="btn"><img src="../docs/assets/common/action_button/save.webp">保存设置</span>
+      <span class="btn"><img src="../docs/assets/common/action_button/gears.webp">打开设置文件夹</span>
+      <span class="spacer"></span>
+      <span class="lbl">界面主题</span>
+      <span class="seg" id="mgrTheme"><span data-t="light" class="on">浅色</span><span data-t="dark">深色</span></span>
+      <span class="btn"><img src="../docs/assets/common/action_button/leave.webp">退出</span>
+    </div>
+  </div>
+
+  <!-- ============ 管理器·展示页 ============ -->
+  <h2>二、管理器 · 展示标签页（核心页面）</h2>
+  <div class="desc">从上到下：选择建造顺序 → 悬浮窗开关与状态 → 外观设置 → 展示控制。悬浮窗上的三个按钮在这里都有对应按钮（另含归零）。</div>
+  <div class="window">
+    <div class="titlebar"><span>RTS Overlay 管理器</span><span class="btns">— □ ×</span></div>
+    <div class="guide">
+      <span class="g done"><span class="n">✓</span>导入建造顺序</span><span class="sep">→</span>
+      <span class="g cur"><span class="n">2</span>选择与配置</span><span class="sep">→</span>
+      <span class="g"><span class="n">3</span>开启悬浮窗</span>
+      <span class="help">? 帮助</span>
+    </div>
+    <div class="tabs"><span class="tab">导入</span><span class="tab on">展示</span></div>
+    <div class="body">
+      <div class="row" style="margin-top:0">
+        <span class="lbl">文明/阵营：</span>
+        <span class="combo"><img src="../docs/assets/aoe2/civilization/question_mark.webp">全部（Generic）<span class="caret">▼</span></span>
+        <span class="lbl" style="margin-left:14px">搜索：</span>
+        <input class="search" value="直城" readonly>
+      </div>
+      <div class="list">
+        <div class="item sel"><span>▶ 直城骑士（Knights into Castle）</span><span class="tag">通用 · 18 步</span></div>
+        <div class="item"><span>直城弩手</span><span class="tag">通用 · 16 步</span></div>
+        <div class="item"><span>直城双TC</span><span class="tag">通用 · 20 步</span></div>
+      </div>
+      <div class="sec">
+        <div class="st">悬浮窗</div>
+        <div class="row" style="margin-top:0">
+          <span class="btn primary"><img class="big" src="../docs/assets/common/action_button/hide.webp">关闭悬浮窗</span>
+          <span class="lbl">状态：</span>
+          <span class="seg"><span>游戏前 · 布置</span><span class="on">游戏中</span></span>
+          <span class="lbl">（游戏中：不可拖动，按钮可点，其余区域穿透）</span>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="st">悬浮窗外观（改动即时生效；悬浮窗背景独立于管理器主题）</div>
+        <div class="row" style="margin-top:0">
+          <span class="lbl">背景色</span> <span class="swatch"></span>
+          <span class="lbl" style="margin-left:14px">不透明度</span>
+          <span class="slider"><span class="track"><i></i></span><span class="lbl">85 %</span></span>
+          <span class="lbl" style="margin-left:14px">字号</span>
+          <span class="combo">11 p <span class="caret">▼</span></span>
+          <span class="lbl" style="margin-left:14px">缩放</span>
+          <span class="combo">100 % <span class="caret">▼</span></span>
+        </div>
+      </div>
+      <div class="sec">
+        <div class="st">展示控制（与悬浮窗上的按钮等效，另含归零）</div>
+        <div class="row" style="margin-top:0">
+          <span class="btn"><img class="big" src="../docs/assets/common/action_button/start_stop.webp">开始/停止计时</span>
+          <span class="btn"><img class="big" src="../docs/assets/common/action_button/previous.webp">上一步</span>
+          <span class="btn"><img class="big" src="../docs/assets/common/action_button/next.webp">下一步</span>
+          <span class="btn"><img class="big" src="../docs/assets/common/action_button/timer_0.webp">归零</span>
+        </div>
+        <div class="lbl mt6">游戏内快捷键：Alt+' 下一步 · Alt+E 显示/隐藏 · 其余见快捷键配置（齿轮）</div>
+      </div>
+    </div>
+    <div class="bottombar">
+      <span class="btn"><img src="../docs/assets/common/action_button/save.webp">保存设置</span>
+      <span class="btn"><img src="../docs/assets/common/action_button/gears.webp">打开设置文件夹</span>
+      <span class="spacer"></span>
+      <span class="lbl">界面主题</span>
+      <span class="seg" id="mgrTheme2"><span data-t="light" class="on">浅色</span><span data-t="dark">深色</span></span>
+      <span class="btn"><img src="../docs/assets/common/action_button/leave.webp">退出</span>
+    </div>
+  </div>
+
+  <!-- ============ 悬浮窗 ============ -->
+  <h2>三、悬浮窗 · 两个状态（按钮完全相同，唯一区别是能否拖动）</h2>
+  <div class="desc">两个状态都显示三个按钮（开始/停止计时、上一步、下一步），方便布置模式进游戏前先试流程。布置模式=可整窗拖动；游戏模式=不可拖动、按钮可点、其余区域穿透到游戏。归零按钮只在管理器。</div>
+  <div class="overlaywrap">
+    <!-- 布置模式 -->
+    <div class="center">
+      <div class="ov">
+        <div class="drag-hint"><span class="lab">⟺ 整窗可拖动（仅此区别）</span></div>
+        <div class="content">
+          <div class="btnrow">
+            <span class="iconbtn" title="开始/停止计时"><img src="../docs/assets/common/action_button/start_stop.webp"></span>
+            <span class="iconbtn" title="上一步"><img src="../docs/assets/common/action_button/previous.webp"></span>
+            <span class="resline" style="flex:1; justify-content:center">
+              <img src="../docs/assets/aoe2/MaleVillDE.webp"><span>20</span>
+              <img src="../docs/assets/aoe2/Aoe2de_wood.webp"><span>4</span>
+              <img src="../docs/assets/aoe2/Aoe2de_food.webp"><span>6</span>
+            </span>
+            <span class="iconbtn" title="下一步"><img src="../docs/assets/common/action_button/next.webp"></span>
+            <span class="stepcnt">2/18</span>
+          </div>
+          <div class="botitle">直城骑士</div>
+          <div class="bostep">① 6人吃羊</div>
+          <div class="bostep cur">② 4人伐木，升封建</div>
+          <div class="bostep">③ 双民兵压制…</div>
+        </div>
+      </div>
+      <div class="ovlegend"><b>状态一：游戏前（布置模式）</b><br>显示 3 按钮 + 整窗可拖动（进入游戏前提前测试流程）</div>
+    </div>
+    <!-- 游戏模式 -->
+    <div class="center">
+      <div class="ov">
+        <div class="passthru"><span class="lab">⇢ 按钮外区域点击穿透到游戏</span></div>
+        <div class="content">
+          <div class="btnrow">
+            <span class="iconbtn clickable" title="开始/停止计时"><img src="../docs/assets/common/action_button/start_stop.webp"></span>
+            <span class="iconbtn clickable" title="上一步"><img src="../docs/assets/common/action_button/previous.webp"></span>
+            <span class="resline" style="flex:1; justify-content:center">
+              <img src="../docs/assets/aoe2/MaleVillDE.webp"><span>20</span>
+              <img src="../docs/assets/aoe2/Aoe2de_wood.webp"><span>4</span>
+              <img src="../docs/assets/aoe2/Aoe2de_food.webp"><span>6</span>
+            </span>
+            <span class="iconbtn clickable" title="下一步"><img src="../docs/assets/common/action_button/next.webp"></span>
+            <span class="stepcnt">2/18</span>
+          </div>
+          <div class="botitle">直城骑士</div>
+          <div class="bostep">① 6人吃羊</div>
+          <div class="bostep cur">② 4人伐木，升封建</div>
+          <div class="bostep">③ 双民兵压制…</div>
+        </div>
+      </div>
+      <div class="ovlegend"><b>状态二：游戏时（游戏模式）</b><br>同样的 3 按钮（<span style="color:#2dcf5e">绿框</span>=可点击），不可拖动，其余穿透</div>
+    </div>
+  </div>
+
+  <!-- ============ 映射与说明 ============ -->
+  <h2>四、管理器控件 → 悬浮窗行为对照</h2>
+  <table>
+    <tr><th>管理器控件</th><th>作用</th></tr>
+    <tr><td>从剪贴板导入（导入页）</td><td>直接读取剪贴板内容，格式正确即导入保存；异常时弹窗提示</td></tr>
+    <tr><td>开启/关闭悬浮窗</td><td>显示或隐藏悬浮窗；开启后默认进入"游戏前·布置"状态</td></tr>
+    <tr><td>状态切换 [游戏前·布置 | 游戏中]</td><td>两状态按钮相同；布置=可整窗拖动，游戏中=不可拖动、其余区域穿透</td></tr>
+    <tr><td>选择列表（点击一条）</td><td>悬浮窗立即显示该建造顺序（管理器保持打开可继续调整）</td></tr>
+    <tr><td>外观四项（背景色/不透明度/字号/缩放）</td><td>写设置并即时刷新悬浮窗渲染</td></tr>
+    <tr><td>展示控制四按钮（含归零）</td><td>归零仅在管理器；其余三个与悬浮窗按钮、全局快捷键等效</td></tr>
+    <tr><td>界面主题 [浅色 | 深色]</td><td>仅切换管理器配色（默认浅色），不影响悬浮窗外观；偏好记忆在设置中</td></tr>
+    <tr><td>关闭管理器窗口</td><td>退出整个程序；最小化管理器不影响悬浮窗</td></tr>
+  </table>
+
+  <div class="note">
+    说明：① 本设计稿用 HTML 还原，实际为 PyQt5 实现；页头与管理器里的"界面主题"开关都可点击，整页即时换装（演示真实功能）；
+    ② 管理器默认浅色主题，深色保留为可选项；悬浮窗外观独立（背景色由用户设置）；
+    ③ 悬浮窗两状态按钮一致：开始/停止计时、上一步、下一步；"归零"只在管理器；
+    ④ 全部界面文案沿用 R2 汉化机制，新增文案同步入典；全局快捷键与设置文件向后兼容；next_panel 快捷键改为"切换悬浮窗状态"。
+  </div>
+</div>
+
+<script>
+  function setTheme(t) {
+    document.body.className = (t === "dark") ? "theme-dark" : "theme-light";
+    document.querySelectorAll("[data-t]").forEach(function (el) {
+      el.classList.toggle("on", el.getAttribute("data-t") === t);
+    });
+  }
+  document.querySelectorAll("[data-t]").forEach(function (el) {
+    el.addEventListener("click", function () { setTheme(el.getAttribute("data-t")); });
+  });
+</script>
+</body>
+</html>
