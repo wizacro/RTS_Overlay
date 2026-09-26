@@ -1,286 +1,289 @@
-Presentation
+简介
 ============
-**RTS Overlay** is a tool used to design or import build orders for Real-Time Strategy (RTS) games.
-The build orders can then be displayed on top of the game, and thus can be used with a single monitor.
 
-Updating the build order step in-game is done manually via buttons/hotkeys/timer.
-RTS Overlay does not interact with the game (no screen analysis, no controller interaction).
+> 🌐 本文档为中文译版（基于原项目 v2.15.0），英文原文参见 [CraftySalamander/RTS_Overlay](https://github.com/CraftySalamander/RTS_Overlay)。
 
-Read the main instructions [here](#main-instructions-and-download) to use the overlay.
+**RTS Overlay** 是一款用于设计或导入即时战略（RTS）游戏建造顺序（build order）的工具。
+建造顺序可以直接显示在游戏画面之上，因此单显示器即可使用。
+
+在游戏中更新建造顺序步骤通过按钮/快捷键/计时器手动完成。
+RTS Overlay 不会与游戏本身交互（不分析屏幕画面，也不进行任何操控）。
+
+点击[这里](#主要说明与下载)阅读主要说明，开始使用悬浮窗。
 
 ![RTS Overlay](/docs/assets/common/icon/salamander_sword_shield_small.webp)
 
 
-Table of contents
+目录
 =================
 
-* [Main instructions and download](#main-instructions-and-download)
-* [Using the overlay through a web browser or with an EXE](#using-the-overlay-through-a-web-browser-or-with-an-exe)
-* [Supported games](#supported-games)
-* [Web solution](#web-solution)
-    * [Always On Top](#always-on-top)
-* [EXE/Python solution](#exepython-solution)
-    * [EXE solution](#exe-solution)
-    * [Python configuration](#python-configuration)
-    * [Configuration panel](#configuration-panel)
-    * [Build order selection](#build-order-selection)
-* [Common to Web and EXE/Python solutions](#common-to-web-and-exepython-solutions)
-    * [Designing a build order](#designing-a-build-order)
-    * [Using the build order panel](#using-the-build-order-panel)
-* [Game-specific instructions](#game-specific-instructions)
-    * [Age of Empires II (AoE2)](#age-of-empires-ii-aoe2)
-    * [Age of Empires IV (AoE4)](#age-of-empires-iv-aoe4)
-    * [Age of Mythology (AoM)](#age-of-mythology-aom)
-    * [StarCraft II (SC2)](#starcraft-ii-sc2)
-    * [WarCraft III (WC3)](#warcraft-iii-wc3)
-* [Troubleshooting](#troubleshooting)
-    * [Web version](#web-version)
-    * [EXE/Python version](#exepython-version)
-* [Additional notes](#additional-notes)
+* [主要说明与下载](#主要说明与下载)
+* [通过网页浏览器或 EXE 使用悬浮窗](#通过网页浏览器或-exe-使用悬浮窗)
+* [支持的游戏](#支持的游戏)
+* [网页版方案](#网页版方案)
+    * [窗口置顶](#窗口置顶)
+* [EXE/Python 版方案](#exepython-版方案)
+    * [EXE 版](#exe-版)
+    * [Python 配置](#python-配置)
+    * [配置面板](#配置面板)
+    * [建造顺序选择](#建造顺序选择)
+* [网页版与 EXE/Python 版的通用说明](#网页版与-exepython-版的通用说明)
+    * [设计建造顺序](#设计建造顺序)
+    * [使用建造顺序面板](#使用建造顺序面板)
+* [游戏专属说明](#游戏专属说明)
+    * [帝国时代2（AoE2）](#帝国时代2aoe2)
+    * [帝国时代4（AoE4）](#帝国时代4aoe4)
+    * [神话时代（AoM）](#神话时代aom)
+    * [星际争霸2（SC2）](#星际争霸2sc2)
+    * [魔兽争霸3（WC3）](#魔兽争霸3wc3)
+* [故障排查](#故障排查)
+    * [网页版](#网页版)
+    * [EXE/Python 版](#exepython-版)
+* [补充说明](#补充说明)
 
 
-# Main instructions and download
+# 主要说明与下载
 
-As explained in the [next section](#using-the-overlay-through-a-web-browser-or-with-an-exe), there are two methods to use the overlay:
-* Through a web browser
-    * [YouTube demo](https://youtu.be/dst2b8b4_fo)
-    * Go to [rts-overlay.github.io](https://rts-overlay.github.io/) and follow the instructions.
-* Using an EXE (or running from its Python source code)
-    * [YouTube demo](https://youtu.be/qFBkpTnRzWQ)
-    * Download the EXE (only for Windows) using these links:
-        * [Age of Empires II](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.15.0/aoe2_overlay.zip)
-        * [Age of Empires IV](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.14.0/aoe4_overlay.zip)
-        * [Age of Mythology](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.12.0/aom_overlay.zip)
-        * [Starcraft II](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.12.0/sc2_overlay.zip)
-        * [Warcraft III](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.12.0/wc3_overlay.zip)
-    * Alternatively, run from Python source code, by following the instructions in the [Python configuration](#python-configuration) section.
+如[下一节](#通过网页浏览器或-exe-使用悬浮窗)所述，使用悬浮窗有两种方式：
+* 通过网页浏览器
+    * [YouTube 演示](https://youtu.be/dst2b8b4_fo)
+    * 访问 [rts-overlay.github.io](https://rts-overlay.github.io/) 并按照页面说明操作。
+* 使用 EXE 版（或直接从 Python 源代码运行）
+    * [YouTube 演示](https://youtu.be/qFBkpTnRzWQ)
+    * 通过以下链接下载 EXE（仅支持 Windows，链接指向原项目发布页）：
+        * [帝国时代2](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.15.0/aoe2_overlay.zip)
+        * [帝国时代4](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.14.0/aoe4_overlay.zip)
+        * [神话时代](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.12.0/aom_overlay.zip)
+        * [星际争霸2](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.12.0/sc2_overlay.zip)
+        * [魔兽争霸3](https://github.com/CraftySalamander/RTS_Overlay/releases/download/2.12.0/wc3_overlay.zip)
+    * 也可以从 Python 源代码运行，具体步骤见 [Python 配置](#python-配置)一节。
 
 
-# Using the overlay through a web browser or with an EXE
+# 通过网页浏览器或 EXE 使用悬浮窗
 
-RTS Overlay is available either through a [web browser](https://rts-overlay.github.io/) or as an EXE/Python solution (the EXE solution can be used by downloading the pre-compiled EXE [here](#main-instructions-and-download) or running from Python source code).
+RTS Overlay 既可以通过[网页浏览器](https://rts-overlay.github.io/)使用，也可以作为 EXE/Python 版使用（EXE 版可通过[这里](#主要说明与下载)下载预编译文件，或直接从 Python 源代码运行）。
 
-The web-based solution is easier to use and is a good first step when trying *RTS Overlay*.
-The Exe/Python solution (from source or pre-compiled) offers some additional functionalities:
-1. *Less intrusive*: No header, semi-transparent (opacity) and does not interfere with mouse clicks.
-2. *Global hotkeys*: Both versions support hotkeys, but the web-based version only accepts hotkeys when the focus is on the overlay. The EXE/Python solution listens to hotkeys, even when the focus is on the game.
+网页版更易于上手，是初次体验 *RTS Overlay* 的良好起点。
+EXE/Python 版（源代码运行或预编译）额外提供以下功能：
+1. *更少的干扰*：无标题栏、半透明（可调透明度），且不阻挡鼠标点击。
+2. *全局快捷键*：两个版本都支持快捷键，但网页版只有在悬浮窗获得焦点时才响应快捷键；EXE/Python 版即使焦点在游戏上也能响应快捷键。
 
-How to run:
-* **Web solution**: Go to [rts-overlay.github.io](https://rts-overlay.github.io/) and follow the instructions.
-    * There are two modes: 'Picture-in-Picture' (should keep your overlay automatically on top of your game) and 'Classical window'. To keep it on top of your game while playing in 'Classical window' mode, use an *Always On Top* application. For Windows, [PowerToys](https://learn.microsoft.com/en-us/windows/powertoys/) is a good solution. It is free, developed by Microsoft and available on the [Microsoft Store](https://apps.microsoft.com/).
-    * You can also download a local version to improve the speed, work offline and customize the experience. [Click here](https://github.com/CraftySalamander/RTS_Overlay/archive/refs/heads/master.zip), unzip and open *docs/index.html* with any web browser. Alternatively, you can click on the installation button in the URL bar (for Chrome and Edge) to install it locally.
-    * The development (non-stable) version is available [here](https://craftysalamander.github.io/RTS_Overlay/).
-* **EXE/Python solution**: Download the EXE [here](#main-instructions-and-download) or follow the Python instructions [here](#python-configuration).
-    * The EXE is a pre-compiled version (obtained from Python source code) in a zip package. No need to install the python environment, only unzip and click on the game EXE (in the *overlay* sub-folder). Note that some antivirus softwares do not like EXE in zip files downloaded from the internet (and you might need to ask an exception if you decide to use this solution).
+运行方式：
+* **网页版**：访问 [rts-overlay.github.io](https://rts-overlay.github.io/) 并按照页面说明操作。
+    * 有两种模式："画中画"（Picture-in-Picture，通常会将悬浮窗自动置于游戏之上）和"经典窗口"。若使用"经典窗口"模式并希望悬浮窗保持在游戏之上，请借助*窗口置顶*类工具。Windows 平台上推荐 [PowerToys](https://learn.microsoft.com/en-us/windows/powertoys/)——免费、由微软开发，可从 [Microsoft Store](https://apps.microsoft.com/) 获取。
+    * 你也可以下载本地版以提升速度、离线使用并自定义体验：[点击此处](https://github.com/CraftySalamander/RTS_Overlay/archive/refs/heads/master.zip)下载压缩包，解压后用任意网页浏览器打开 *docs/index.html*。也可以点击浏览器地址栏中的安装按钮（Chrome 和 Edge）将其安装到本地。
+    * 开发版（非稳定版）见[这里](https://craftysalamander.github.io/RTS_Overlay/)。
+* **EXE/Python 版**：从[这里](#主要说明与下载)下载 EXE，或按照[这里](#python-配置)的 Python 说明操作。
+    * EXE 是预编译版本（由 Python 源代码编译得到），打包为 zip 压缩包。无需安装 Python 环境，解压后点击对应游戏的 EXE 即可（位于 *overlay* 子文件夹中）。注意：某些杀毒软件不信任从网上下载的 zip 包里的 EXE 文件（如果你选择这种方式，可能需要为其添加例外规则）。
 
 
-# Supported games
+# 支持的游戏
 
-At the moment, the following games are supported:
+目前支持以下游戏：
 
-* [Age of Empires II Definitive Edition](https://www.ageofempires.com/games/aoeiide/)
-    * Download any build order from [buildorderguide.com](https://www.buildorderguide.com) (click on *Export for RTS*) or [RTS Builds](https://craftysalamander.github.io/rtsbuilds/?gameId=aoe2) (click on *Open in RTS Overlay*).
-    * See YouTube demo [here](https://youtu.be/tONaR2oOt3I) (Web solution) or [here](https://youtu.be/qFBkpTnRzWQ) (EXE/Python solution).
+* [帝国时代2 决定版（Age of Empires II Definitive Edition）](https://www.ageofempires.com/games/aoeiide/)
+    * 从 [buildorderguide.com](https://www.buildorderguide.com)（点击 *Export for RTS*）或 [RTS Builds](https://craftysalamander.github.io/rtsbuilds/?gameId=aoe2)（点击 *Open in RTS Overlay*）下载任意建造顺序。
+    * YouTube 演示见[这里](https://youtu.be/tONaR2oOt3I)（网页版）或[这里](https://youtu.be/qFBkpTnRzWQ)（EXE/Python 版）。
 
-[![AoE2 build order in action](/readme/aoe2_build_order_demo.webp)](https://youtu.be/tONaR2oOt3I)
+[![帝国时代2建造顺序实际效果](/readme/aoe2_build_order_demo.webp)](https://youtu.be/tONaR2oOt3I)
 
-* [Age of Empires IV](https://www.ageofempires.com/games/age-of-empires-iv/)
-    * Download any build order from [aoe4guides.com](https://aoe4guides.com) or [RTS Builds](https://craftysalamander.github.io/rtsbuilds/?gameId=aoe4) (click on *Open in RTS Overlay*) ([age4builder.com](https://age4builder.com) also provided build orders in RTS Overlay format, but the project seems to be donw).
-    * See YouTube demo [here](https://youtu.be/RmsofE58YEg).
+* [帝国时代4（Age of Empires IV）](https://www.ageofempires.com/games/age-of-empires-iv/)
+    * 从 [aoe4guides.com](https://aoe4guides.com) 或 [RTS Builds](https://craftysalamander.github.io/rtsbuilds/?gameId=aoe4)（点击 *Open in RTS Overlay*）下载任意建造顺序（[age4builder.com](https://age4builder.com) 也曾提供 RTS Overlay 格式的建造顺序，但该项目似乎已下线）。
+    * YouTube 演示见[这里](https://youtu.be/RmsofE58YEg)。
 
-[![AoE4 build order in action](/readme/aoe4_build_order_demo.webp)](https://youtu.be/RmsofE58YEg)
+[![帝国时代4建造顺序实际效果](/readme/aoe4_build_order_demo.webp)](https://youtu.be/RmsofE58YEg)
 
-* [Age of Mythology](https://www.ageofempires.com/games/aom/age-of-mythology-retold/)
-    * Download any build order from [RTS Builds](https://craftysalamander.github.io/rtsbuilds/?gameId=aom) (click on *Open in RTS Overlay*) ([thedodclan.com](https://thedodclan.com/) used to provide export function for RTS Overlay, but they dropped the feature in their website redesign).
-    * See YouTube demo [here](https://youtu.be/f11ISkuVhnU).
+* [神话时代（Age of Mythology）](https://www.ageofempires.com/games/aom/age-of-mythology-retold/)
+    * 从 [RTS Builds](https://craftysalamander.github.io/rtsbuilds/?gameId=aom)（点击 *Open in RTS Overlay*）下载任意建造顺序（[thedodclan.com](https://thedodclan.com/) 曾提供导出至 RTS Overlay 的功能，但网站改版后已移除该功能）。
+    * YouTube 演示见[这里](https://youtu.be/f11ISkuVhnU)。
 
-[![AoM build order in action](/readme/aom_build_order_demo.webp)](https://youtu.be/f11ISkuVhnU)
+[![神话时代建造顺序实际效果](/readme/aom_build_order_demo.webp)](https://youtu.be/f11ISkuVhnU)
 
-* [StarCraft II](https://starcraft2.com)
+* [星际争霸2（StarCraft II）](https://starcraft2.com)
 
-![SC2 build order in action](/readme/sc2_build_order_demo.webp)
+![星际争霸2建造顺序实际效果](/readme/sc2_build_order_demo.webp)
 
-* [Warcraft III](https://warcraft3.blizzard.com/)
+* [魔兽争霸3（Warcraft III）](https://warcraft3.blizzard.com/)
 
 
-# Web solution
+# 网页版方案
 
-The main page of the [web version](https://rts-overlay.github.io/) is visible below.
-Full instructions are available when hovering on the "i" icon on the top right of the page.
+[网页版](https://rts-overlay.github.io/)的主页面如下图所示。
+完整使用说明可将鼠标悬停在页面右上角的 "i" 图标上查看。
 
-![Web-based version of RTS Overlay](/readme/rts_overlay_web.webp)
+![网页版 RTS Overlay](/readme/rts_overlay_web.webp)
 
-## Always On Top
+## 窗口置顶
 
-Once the build order is ready, click on the *Display overlay* button to generate a new (small) window with the requested build order.
+建造顺序就绪后，点击 *Display overlay*（显示悬浮窗）按钮，会生成一个新的（小）窗口并显示所选建造顺序。
 
-In "Classical window" mode, be sure to use an *Always On Top* application to keep it on top of your game (no need for the "Picture-in-Picture" mode).
+在"经典窗口"模式下，请务必借助*窗口置顶*类工具将其保持在游戏之上（"画中画"模式无需此操作）。
 
-[Microsoft PowerToys](https://learn.microsoft.com/en-us/windows/powertoys/) is a good solution. It is free, developed by Microsoft and available on the *Microsoft Store*.
-Download it from the *Microsoft Store*, configure the hotkey for the *Always On Top* feature (you can also configure the border color) and use it on the *RTS Overlay* window.
+[Microsoft PowerToys](https://learn.microsoft.com/en-us/windows/powertoys/) 是一个不错的选择。它免费、由微软开发，可在 *Microsoft Store* 获取。
+从 *Microsoft Store* 下载后，为*窗口置顶*（Always On Top）功能配置快捷键（也可以配置边框颜色），然后对 *RTS Overlay* 窗口使用该功能。
 
-# EXE/Python solution
+# EXE/Python 版方案
 
-Select one of the two methods below (*EXE solution* or *Python configuration*). As mentioned above, there are two added benefits (compared to the web-based solution): *Less intrusive* and *Global hotkeys*.
+从下面两种方式中选择其一（*EXE 版*或 *Python 配置*）。如上文所述，相比网页版它们有两大额外优势：*更少的干扰*和*全局快捷键*。
 
-## EXE solution
+## EXE 版
 
-This method is easier to do and runs a compiled version (so more efficient) of the overlay.
-The python code was compiled and zipped with all the dependencies in a zip folder.
-Note that some antivirus softwares do not appreciate zip folders with executables and dependencies downloaded from the internet, and will potentially send false positive warnings.
-Here are the instructions:
+这种方式更简单，运行的是编译版本（效率也更高）。
+Python 代码连同全部依赖库一起编译并打包为 zip 压缩包。
+注意：某些杀毒软件不信任从网上下载的、含有可执行文件和依赖库的 zip 包，可能会报误报警告。
+具体步骤如下：
 
-1. Download the zip folder of the requested game [here](#main-instructions-and-download). On some computers, you might need to unblock the zip folder before extracting it (right click on the zip folder, select properties and then select "unblock").
-2. Unzip it in any location on your computer (ideally in a location where no special computer rights are requested).
-3. To launch the program, simply launch the executable of the requested game (all these executables are located in the *overlay* sub-folder, see specific details for each game).
+1. 从[这里](#主要说明与下载)下载对应游戏的 zip 压缩包。在某些电脑上，解压前可能需要先"解除锁定"（右键点击压缩包 → 选择属性 → 勾选"解除锁定"）。
+2. 将其解压到电脑上的任意位置（最好放在不需要特殊系统权限的目录）。
+3. 启动程序：直接运行对应游戏的可执行文件即可（这些可执行文件都位于 *overlay* 子文件夹中，各游戏的具体细节见对应章节）。
 
-To update the library to a new release, just delete the old folder and replace it with the new release.
-Note that your settings and build orders are saved in the user data directory (e.g. *C:\Users\XXXXX\AppData\Local\RTS_Overlay*). So, updating to a new release should not remove your old settings, nor your build orders.
-In case you want to use a local configuration folder, create a folder called *"local_config"* in the *overlay* sub-folder. The configuration (and build orders) will be saved there.
+要更新到新版本，只需删除旧文件夹并换上新版本文件夹。
+注意：你的配置和建造顺序保存在用户数据目录（例如 *C:\Users\XXXXX\AppData\Local\RTS_Overlay*）中，因此更新版本不会丢失原有配置和建造顺序。
+如果你想使用本地配置文件夹，请在 *overlay* 子文件夹中创建名为 *"local_config"* 的文件夹，配置（和建造顺序）将保存在那里。
 
-If you encounter issues, have a look at the [Troubleshooting](#troubleshooting) section.
+如果遇到问题，请参阅[故障排查](#故障排查)一节。
 
-## Python configuration
+## Python 配置
 
-You can run the program from source using Python. It should not be difficult to do, even without any coding knowledge.
-Here are the instructions:
+你可以使用 Python 从源代码运行本程序。即使没有任何编程基础，做起来也不难。
+具体步骤如下：
 
-1. If you do not yet have a Python environment, you can download and install a Python distribution with conda package manager using the [Anaconda installer](https://www.anaconda.com/download) (other distributions can also work like [Miniforge](https://github.com/conda-forge/miniforge#miniforge3)).
-Optionnaly, you can add the program (e.g. Anaconda3) to your PATH environment variable (to run it from any terminal).
-2. Download the code of RTS Overlay: click on the *Code* button (on top of [this page](https://github.com/CraftySalamander/RTS_Overlay)), then on *Download ZIP*  and extract the ZIP folder (or clone it with [Git](https://git-scm.com/)).
-3. Open *Anaconda Prompt*. If you added the python path to your PATH environment variable, you can open any terminal (e.g. *Command Prompt* on Windows).
-4. Go to the python directory of your extracted folder (e.g. `cd RTS_Overlay-master/python`).
-5. Create the Conda environment: `conda create --name rts_overlay python=3.8`
-6. Activate your environment: `conda activate rts_overlay`
-7. Install the library requirements: `pip install -r utilities/requirements.txt`
-8. Optionally, run `pip install python-Levenshtein==0.12.2` (for slightly faster performances).
-9. Run the application: `python main_aoe2.py` (for AoE2, similar for other games).
+1. 如果你还没有 Python 环境，可以通过 [Anaconda 安装包](https://www.anaconda.com/download)下载并安装带 conda 包管理器的 Python 发行版（其他发行版也可以，如 [Miniforge](https://github.com/conda-forge/miniforge#miniforge3)）。
+可选：将程序（如 Anaconda3）加入 PATH 环境变量（以便在任意终端中运行）。
+2. 下载 RTS Overlay 的代码：点击[此页面](https://github.com/CraftySalamander/RTS_Overlay)顶部的 *Code* 按钮，再点击 *Download ZIP* 并解压压缩包（或使用 [Git](https://git-scm.com/) 克隆仓库）。
+3. 打开 *Anaconda Prompt*。如果你已将 Python 路径加入 PATH 环境变量，也可以打开任意终端（如 Windows 上的 *Command Prompt*）。
+4. 进入解压后文件夹中的 python 目录（例如 `cd RTS_Overlay-master/python`）。
+5. 创建 Conda 环境：`conda create --name rts_overlay python=3.8`
+6. 激活环境：`conda activate rts_overlay`
+7. 安装依赖库：`pip install -r utilities/requirements.txt`
+8. （可选）运行 `pip install python-Levenshtein==0.12.2`（可略微提升性能）。
+9. 运行程序：`python main_aoe2.py`（以 AoE2 为例，其他游戏类似）。
 
-Steps 3, 4, 6 and 9 must be re-done each time you want to launch the program.
+每次运行程序前，需要重新执行第 3、4、6、9 步。
 
-In case you want to build the application as an *exe* program, the command `python prepare_release.py` (after `cd utilities`) will create the standalone libraries, and prepare additional files for the releases (you will need `pip install nuitka==1.0.6` and `pip install orderedset==2.0.3`).
+如果想把程序打包为 *exe* 程序：在 `cd utilities` 之后运行 `python prepare_release.py`，会生成独立的库并为发布准备附加文件（需要先 `pip install nuitka==1.0.6` 和 `pip install orderedset==2.0.3`）。
 
 
-## Configuration panel
+## 配置面板
 
-When you launch the EXE/Python version of *RTS Overlay*, you first see the *Configuration panel*.
-It is used to configure the layout and the build order.
+启动 EXE/Python 版 *RTS Overlay* 后，首先看到的是*配置面板*。
+它用于配置界面布局和建造顺序。
 
-![Configuration panel](/readme/aoe2_panel_configuration.webp)
+![配置面板](/readme/aoe2_panel_configuration.webp)
 
-The first row contains the following action buttons (from left to right):
+第一行从左到右依次是以下操作按钮：
 
-* [Quit application](docs/assets/common/action_button/leave.webp): Quit the tool.
-* [Save settings](docs/assets/common/action_button/save.webp): Save the configuration in a settings file (e.g. *aoe2_settings.py*).
-* [Load settings](docs/assets/common/action_button/load.webp): Load the settings of the aforementioned file (this file is automatically loaded at launch).
-* [Configuration](docs/assets/common/action_button/gears.webp): Configure the hotkeys (using keyboard and/or mouse inputs) and open the folder where the corresponding configuration files are saved. This folder contains both the settings and the build orders. To add a build order, obtain its JSON file (from [craftysalamander.github.io/rtsbuilds](https://craftysalamander.github.io/rtsbuilds), a third party or design it on [rts-overlay.github.io](https://rts-overlay.github.io)) and place it in the sub-folder `build_orders` (fron this configuration folder). For AoE2, this sub-folder is typically *C:\Users\XXXXX\AppData\Local\RTS_Overlay\aoe2\build_orders*.
-* [Add/Edit build orders](docs/assets/common/action_button/feather.webp): Add/remove any build order by pasting a build order text or open the build order folder to manually remove any build order.
-* Choose the font size of the text police.
-* Choose the scaling of the layout (images, spacing...).
-    * When using a 4K display, you can for instance set this value to *200 %*.
-* [Next panel](docs/assets/common/action_button/to_end.webp): go to the Next panel (cycling between *Configuration* and *Build Order*).
+* [退出程序](docs/assets/common/action_button/leave.webp)：退出本工具。
+* [保存设置](docs/assets/common/action_button/save.webp)：将配置保存到设置文件（如 *aoe2_settings.py*）。
+* [加载设置](docs/assets/common/action_button/load.webp)：加载上述设置文件（程序启动时会自动加载该文件）。
+* [配置](docs/assets/common/action_button/gears.webp)：配置快捷键（支持键盘和/或鼠标输入），并打开保存相应配置文件的文件夹。该文件夹同时存放设置和建造顺序。要添加建造顺序，先获取其 JSON 文件（来自 [craftysalamander.github.io/rtsbuilds](https://craftysalamander.github.io/rtsbuilds)、第三方网站，或在 [rts-overlay.github.io](https://rts-overlay.github.io) 上自行设计），然后放入该配置文件夹下的 `build_orders` 子文件夹。以 AoE2 为例，该子文件夹通常是 *C:\Users\XXXXX\AppData\Local\RTS_Overlay\aoe2\build_orders*。
+* [添加/编辑建造顺序](docs/assets/common/action_button/feather.webp)：通过粘贴建造顺序文本来添加/移除建造顺序，或打开建造顺序文件夹手动删除。
+* 选择文本字体大小。
+* 选择界面布局的缩放比例（图片、间距等）。
+    * 例如使用 4K 显示器时，可将此值设为 *200 %*。
+* [下一面板](docs/assets/common/action_button/to_end.webp)：切换到下一个面板（在*配置*和*建造顺序*之间循环）。
 
-The following hotkeys are global in the sense that they can be used even when you do not have the focus on the overlay (typically while playing the game):
-* *next_panel*: cycle through the next panel
-* *show_hide*: show/hide the application
-* *build_order_previous_step*: go to the previous build order step, or update the timer to -1 sec (see below)
-* *build_order_next_step*: go to the next build order step, or update the timer to +1 sec (see below)
-* *switch_timer_manual*: swicth between manual and timer-based transitions (see below)
-* *start_timer*: start the timer
-* *stop_timer*: stop the timer
-* *start_stop_timer*: start or stop the timer
-* *reset_timer*: reset the timer to *0:00*
+以下快捷键是"全局"的，即即使焦点不在悬浮窗上（比如正在玩游戏时）也能使用：
+* *next_panel*：切换到下一个面板
+* *show_hide*：显示/隐藏程序
+* *build_order_previous_step*：建造顺序上一步，或将计时器减 1 秒（见下文）
+* *build_order_next_step*：建造顺序下一步，或将计时器加 1 秒（见下文）
+* *switch_timer_manual*：在手动切换和计时器模式之间切换（见下文）
+* *start_timer*：启动计时器
+* *stop_timer*：停止计时器
+* *start_stop_timer*：启动或停止计时器
+* *reset_timer*：将计时器重置为 *0:00*
 
-You can move the window with drag and drop, using the left click. Because the window will be resized depending on its content, what matters is only the upper right corner position. This upper right position will be maintained (and saved in the settings file using the [Save settings](docs/assets/common/action_button/save.webp) button).
+可以用鼠标左键拖放移动窗口。由于窗口大小会随内容变化，真正重要的是窗口右上角的位置。该右上角位置会被保持（并通过[保存设置](docs/assets/common/action_button/save.webp)按钮存入设置文件）。
 
-The overlay window should stay on top of your other applications (game included). Sometimes, it might not work properly at launch, but clicking a single time on [Next panel](docs/assets/common/action_button/to_end.webp) should solve the issue.
+悬浮窗应始终保持在其他程序（包括游戏）之上。有时启动时可能不生效，点击一次[下一面板](docs/assets/common/action_button/to_end.webp)按钮通常即可解决。
 
-More options are available in this settings file (police font, size of the images...). Click on [Configuration](docs/assets/common/action_button/gears.webp), then on `Open settings folder` to find it. You can edit it (JSON format) with any text editor and reload it (using the [Load settings](docs/assets/common/action_button/load.webp) button or by quitting and relaunching the application).
+设置文件中还有更多选项（字体、图片尺寸等）。点击[配置](docs/assets/common/action_button/gears.webp)，再点击 `Open settings folder` 即可找到。可以用任意文本编辑器编辑该文件（JSON 格式）并重新加载（通过[加载设置](docs/assets/common/action_button/load.webp)按钮，或退出并重启程序）。
 
-## Build order selection
+## 建造顺序选择
 
-In the configuration panel, you find the **Build Order** search bar. To choose the build order to display, start by typing a few keywords. A list of up to 10 corresponding build orders appear. This is performed using a fuzzy search. Alternatively, you can deactivate this fuzzy search (or tune it) in the aforementioned settings file (JSON format) with the `bo_list_fuzz_search` flag. When set to False, all the keywords separated by spaces must appear in the selected build orders names. Finally, if you only type a single space character, the first 10 build orders will appear. The overlay has a filtering option to select your faction or a generic build order (and potentially the one of your opponent).
+在配置面板中可以找到 **Build Order**（建造顺序）搜索栏。要选择要显示的建造顺序，先输入几个关键词，最多会列出 10 条匹配的建造顺序。这里使用的是模糊搜索。你也可以在上述设置文件（JSON 格式）中通过 `bo_list_fuzz_search` 开关关闭（或调整）模糊搜索：设为 False 时，以空格分隔的所有关键词都必须出现在所选建造顺序的名称中。另外，如果只输入一个空格字符，会显示前 10 条建造顺序。悬浮窗还提供筛选功能，可选择你的阵营或通用建造顺序（以及可能的对手阵营）。
 
-Press *Enter* to select the build order appearing in bold. By default, the one selected is the first of the list, but you can use *Tab* to select another one. Another solution is to click with the mouse on the requested build order.
+按 *Enter* 选中以粗体显示的建造顺序。默认选中的是列表第一条，也可以用 *Tab* 选择其他条目，或者直接用鼠标点击想要的建造顺序。
 
 
-# Common to Web and EXE/Python solutions
+# 网页版与 EXE/Python 版的通用说明
 
-## Designing a build order
+## 设计建造顺序
 
-When available, the easiest way to design a build order is through a dedicated website which can output the build orders in correct format (e.g. [buildorderguide.com](https://www.buildorderguide.com) for AoE2). Many existing build orders can be found on these websites.
+如果条件允许，设计建造顺序最简单的方法是通过专门的网站，直接输出正确格式的建造顺序（例如 AoE2 的 [buildorderguide.com](https://www.buildorderguide.com)）。这些网站上可以找到大量现成的建造顺序。
 
-Alternatively, you can write it in the build order design panel by clicking on **Design your own** in the [web version](https://rts-overlay.github.io/) (see demo [here](https://youtu.be/dst2b8b4_fo)). For the EXE/Python solution, use the [Add/Edit build orders button](docs/assets/common/action_button/feather.webp).
-The generated build orders are identical for the two versions (Web & EXE/Python).
+你也可以在建造顺序设计面板中手动编写：在[网页版](https://rts-overlay.github.io/)中点击 **Design your own**（见[这里](https://youtu.be/dst2b8b4_fo)的演示）；EXE/Python 版则使用[添加/编辑建造顺序按钮](docs/assets/common/action_button/feather.webp)。
+两个版本生成的建造顺序完全相同（网页版与 EXE/Python 版）。
 
-![Build Order Design](/readme/rts_overlay_aoe2_editor.gif)
+![建造顺序设计](/readme/rts_overlay_aoe2_editor.gif)
 
-## Using the build order panel
+## 使用建造顺序面板
 
-On the EXE/Python version, you cannot click on this window (allowing to still click on the game behind it), except on the buttons of the first row. The web version does not have this feature (i.e. it is not transparent to mouse interactions).
+在 EXE/Python 版中，除第一行的按钮外，你无法点击悬浮窗本身（这样可以继续点击它后面的游戏画面）。网页版没有这一特性（即对鼠标交互不透明）。
 
-You can select the step of the build order, using the two [arrow buttons](docs/assets/common/action_button/previous.webp). The current step of the build order is indicated next to it. You can also use the aforementioned hotkeys to change the build order step, even when you do not have the focus on the overlay.
+可以使用两个[箭头按钮](docs/assets/common/action_button/previous.webp)选择建造顺序的步骤，当前步骤序号显示在按钮旁边。也可以使用前述快捷键切换步骤，即使焦点不在悬浮窗上也有效。
 
-In case the timer update feature is available and is compatible with the current build order, the [feather/hourglass button](docs/assets/common/action_button/manual_timer_switch.webp) will appear. When clicking on it, the build order update will use timing instructions. To stop/run, click on the [corresponding button](docs/assets/common/action_button/start_stop.webp). The [arrow buttons](docs/assets/common/action_button/previous.webp) now updates the timer by 1 second, while the [reset button](docs/assets/common/action_button/timer_0.webp) with set the timer to *0:00*. When running, the current instruction is highlighted, while the previous and next ones are also shown. Hotkeys are also available for all these actions.
+如果计时器功能可用且与当前建造顺序兼容，会出现[羽毛笔/沙漏按钮](docs/assets/common/action_button/manual_timer_switch.webp)。点击后，建造顺序将按照时间说明自动更新。开始/停止计时可点击[对应按钮](docs/assets/common/action_button/start_stop.webp)。此时[箭头按钮](docs/assets/common/action_button/previous.webp)变为将计时器增减 1 秒，[重置按钮](docs/assets/common/action_button/timer_0.webp)将计时器归零为 *0:00*。计时运行时，当前指令会高亮显示，同时也会显示上一条和下一条指令。以上所有操作都有对应的快捷键。
 
-The build order typically indicates the number of workers to assign to each resource, the total number of workers/supply and some notes.
-When applicable, the age to reach, the time and/or the number of builders are also indicated.
+建造顺序通常标明每种资源应分配多少村民、村民/人口总数以及一些注意事项。
+如适用，还会标明需要达到的时代、时间和/或建造者数量。
 
-![Build Order panel](/readme/aoe2_panel_build_order.webp)
+![建造顺序面板](/readme/aoe2_panel_build_order.webp)
 
 
-# Game-specific instructions
+# 游戏专属说明
 
-## Age of Empires II (AoE2)
+## 帝国时代2（AoE2）
 
-To run the application, select Age of Empires II (web version) or launch *aoe2_overlay.exe* (download [here](#main-instructions-and-download), or run from [Python source](#python-configuration)).
+运行方式：选择帝国时代2（网页版），或启动 *aoe2_overlay.exe*（从[这里](#主要说明与下载)下载，或从 [Python 源代码](#python-配置)运行）。
 
 
-## Age of Empires IV (AoE4)
+## 帝国时代4（AoE4）
 
-To run the application, select Age of Empires IV (web version) or launch *aoe4_overlay.exe* (download [here](#main-instructions-and-download), or run from [Python source](#python-configuration)).
+运行方式：选择帝国时代4（网页版），或启动 *aoe4_overlay.exe*（从[这里](#主要说明与下载)下载，或从 [Python 源代码](#python-配置)运行）。
 
 
-## Age of Mythology (AoM)
+## 神话时代（AoM）
 
-To run the application, select Age of Mythology (web version) or launch *aom_overlay.exe* (download [here](#main-instructions-and-download), or run from [Python source](#python-configuration)).
+运行方式：选择神话时代（网页版），或启动 *aom_overlay.exe*（从[这里](#主要说明与下载)下载，或从 [Python 源代码](#python-配置)运行）。
 
 
-## StarCraft II (SC2)
+## 星际争霸2（SC2）
 
-To run the application, select StarCraft II (web version) or launch *sc2_overlay.exe* (download [here](#main-instructions-and-download), or run from [Python source](#python-configuration)).
+运行方式：选择星际争霸2（网页版），或启动 *sc2_overlay.exe*（从[这里](#主要说明与下载)下载，或从 [Python 源代码](#python-配置)运行）。
 
 
-## WarCraft III (WC3)
+## 魔兽争霸3（WC3）
 
-To run the application, select WarCraft III (web version) or launch *wc3_overlay.exe* (download [here](#main-instructions-and-download), or run from [Python source](#python-configuration)).
+运行方式：选择魔兽争霸3（网页版），或启动 *wc3_overlay.exe*（从[这里](#主要说明与下载)下载，或从 [Python 源代码](#python-配置)运行）。
 
 
-# Troubleshooting
+# 故障排查
 
-In case of issues, try first the tips below. If none of them solve the issue, you can add an issue on GitHub (https://github.com/CraftySalamander/RTS_Overlay/issues) describing your problem (the more details, the better).
-For the EXE/Python solution, be sure to mention the version number (located in *version.json* at the root of the folder).
+遇到问题时，先尝试下面的建议。如果都无法解决，可以在 GitHub 上提交 issue（https://github.com/CraftySalamander/RTS_Overlay/issues）描述你的问题（细节越丰富越好）。
+使用 EXE/Python 版时，请务必注明版本号（位于文件夹根目录的 *version.json* 中）。
 
-## Web version
+## 网页版
 
-If you encounter issues with the web-based version, you can try to run with another web browser (Chrome, Edge...) to see if the same issue still appears. For this overlay, Edge and Chrome seem to work better than other browsers like Firefox.
+如果网页版出现问题，可以换一个网页浏览器（Chrome、Edge 等）试试，看问题是否依旧。就本悬浮窗而言，Edge 和 Chrome 通常比 Firefox 等其他浏览器表现更好。
 
-## EXE/Python version
+## EXE/Python 版
 
-On some computers, you might need to allow the access to the executable or the whole folder. In particular, if you see "cannot proceed because python38.dll was not found", you must unblock the zip folder before extracting it (right click on the zip folder, select properties and then select "unblock").
+在某些电脑上，你可能需要允许访问该可执行文件或整个文件夹。特别是当看到 "cannot proceed because python38.dll was not found" 时，必须在解压前先解除 zip 包的锁定（右键点击压缩包 → 选择属性 → 勾选"解除锁定"）。
 
-Similarly, Windows (or your antivirus) might read *.exe* files as threats and remove them. You might have to add some defender exceptions.
+同样，Windows（或杀毒软件）可能将 *.exe* 文件识别为威胁并删除，此时你可能需要添加 Defender 例外规则。
 
-In case the application launches (i.e. you can see its icon in the Taskbar) but is not visible, it might be that the overlay appears outside your screen (e.g. in case you used multiple monitors and unplugged one of them). Check if the settings seem correct (the file will most likely be located in *C:\Users\xxx\AppData\Local\RTS_Overlay\xxx\settings\xxx_settings.json*). For instance, the location of the overlay upper corners are saved in the settings `layout > upper_right_position` (for `overlay_on_right_side` set to `True`) and `layout > upper_left_position` (for `overlay_on_right_side` set to `False`).
+如果程序已启动（任务栏能看到图标）但窗口不可见，可能是悬浮窗出现在了屏幕之外（例如曾使用多显示器、后来拔掉了一台）。检查设置文件是否正常（文件通常位于 *C:\Users\xxx\AppData\Local\RTS_Overlay\xxx\settings\xxx_settings.json*）。例如，悬浮窗上角位置保存在设置项 `layout > upper_right_position`（`overlay_on_right_side` 为 `True` 时）和 `layout > upper_left_position`（`overlay_on_right_side` 为 `False` 时）中。
 
-On Linux, if the overlay does not stay on top of other applications, use `Alt+Space` to bring out the titlebar menu for non-GTK applications in Gnome, then just press "Always on top".
-It was successfully tested on Linux with X11.
+在 Linux 上，如果悬浮窗无法保持在其他程序之上，可用 `Alt+Space` 呼出 Gnome 中非 GTK 程序的标题栏菜单，然后选择 "Always on top"（置顶）。
+已在 Linux 的 X11 环境下测试通过。
 
-If the aforementioned tips are not enough, you might try to run the application from sources (using Python).
-This is documented in the [Python configuration](#python-configuration) section (and should not be difficult, even without Python knowledge).
+如果以上方法都不奏效，可以尝试直接从源代码运行程序（使用 Python）。
+具体见 [Python 配置](#python-配置)一节（即使没有 Python 基础也不难）。
 
 
-# Additional notes
-**RTS Overlay** is not associated with the developers/publishers of the aforementioned games.
+# 补充说明
+**RTS Overlay** 与上述游戏的开发商/发行商没有任何关联。
 
-For Blizzard-Microsoft games, **RTS Overlay** was created under Microsoft's "[Game Content Usage Rules](https://www.xbox.com/en-us/developers/rules)" using assets from the corresponding games, and it is not endorsed by or affiliated with Microsoft.
+对于暴雪-微软系游戏，**RTS Overlay** 是依据微软"[Game Content Usage Rules](https://www.xbox.com/en-us/developers/rules)"（游戏内容使用规则）使用相应游戏素材创建的，未获得微软的认可，也与微软无从属关系。

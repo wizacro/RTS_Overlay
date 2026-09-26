@@ -1,346 +1,346 @@
 # [2.15.0] - 2026.09.23
-* AoE2
-    * Add Viking Sagas content.
+* 帝国时代2
+    * 添加维京萨迦（Viking Sagas）内容。
 
 # [2.14.0] - 2026.06.21
-* Web
-    * Auto-resize is the default.
-    * Shorter tooltip text messages for overlay window.
-* Python
-    * Add back window to paste JSON code.
+* 网页版
+    * 自动调整大小成为默认行为。
+    * 悬浮窗工具提示（tooltip）文本更简短。
+* Python 版
+    * 恢复粘贴 JSON 代码的窗口。
 
 # [2.13.0] - 2026.06.10
-* Web
-    * Picture-in-Picture mode selection added.
-    * Background color customization added.
-    * Manual vs auto window resize option added.
-    * Updated web visual presentation.
-    * Better visualization for mobile (but still not the primary focus of the project).
+* 网页版
+    * 新增画中画（Picture-in-Picture）模式选择。
+    * 新增背景颜色自定义。
+    * 新增窗口手动/自动调整大小选项。
+    * 更新网页版界面外观。
+    * 改善移动端显示效果（但这仍不是本项目的重点）。
 
 # [2.12.1] - 2026.05.20
-* Python
-    * Add more meaningful message in case no BO is found.
-    * A Readme is added in the build order folder if no valid build order is present.
+* Python 版
+    * 找不到建造顺序（BO）时给出更明确的提示信息。
+    * 当建造顺序文件夹中没有有效建造顺序时，在其中添加一个说明文件。
 
 # [2.12.0] - 2026.05.13
-* Python
-    * Add feather button to open build order folder.
-* AoE4
-    * Add the Jin Dynasty civilization.
-* AoE2
-    * "All" build orders filtering (generic or civ-specific) added.
+* Python 版
+    * 新增羽毛笔按钮，用于打开建造顺序文件夹。
+* 帝国时代4
+    * 新增金朝（Jin Dynasty）文明。
+* 帝国时代2
+    * 新增建造顺序 "All"（全部）筛选（通用或按文明）。
 
 ## [2.11.2] - 2026.05.02
-* Web
-    * Add RTS Builds links to sc2 and wc3
+* 网页版
+    * 为 SC2 和 WC3 添加 RTS Builds 链接
 
 ## [2.11.1] - 2026.04.29
-* WC3
-    * Add missing icons.
-* Python
-    * Upgrade rename_images.py to remove camel case.
+* 魔兽争霸3
+    * 补齐缺失的图标。
+* Python 版
+    * 升级 rename_images.py，移除驼峰命名。
 
 ## [2.11.0] - 2026.04.25
-* AoM
-    * Add Aztecs pantheon.
-* Python
-    * Update convert_images.py to support arguments parser.
-    * Add rename_images.py
-* Web
-    * Remove DoD Clan links and corresponding BO computation (DoD Clan stopped supporting RTS Overlay).
+* 神话时代
+    * 新增阿兹特克万神殿。
+* Python 版
+    * 更新 convert_images.py 以支持命令行参数解析。
+    * 新增 rename_images.py
+* 网页版
+    * 移除 DoD Clan 链接及相应的建造顺序计算（DoD Clan 不再支持 RTS Overlay）。
 
 ## [2.10.1] - 2026.03.12
-* AoE2
-    * buildorderguide-3.vercel.app back to buildorderguide.com
+* 帝国时代2
+    * buildorderguide-3.vercel.app 恢复为 buildorderguide.com
 
 ## [2.10.0] - 2026.02.27
-* Most images converted from .png and .jpg to .webp.
-* Remove national flags images.
-* Python
-    * Remove the build order design panel (keep only the better web version).
-    * Move overlay images definition from settings to app.
-* External websites links updates
-    * buildorderguide.com temporarily replaced by buildorderguide-3.vercel.app (while waiting for deployment issue to be solved).
-    * Remove age4builder.com links (seems to be down).
-    * Add links to RTS Builds for AoE2, AoE4 and AoM.
-    * Update button label to External website name instead of address.
-* AoE2
-    * Add "The Last Chieftains" civilizations (including images).
-* AoM
-    * Add "Demeter" major god (including images).
+* 大部分图片从 .png 和 .jpg 转换为 .webp 格式。
+* 移除国旗图片。
+* Python 版
+    * 移除建造顺序设计面板（仅保留更好用的网页版）。
+    * 将悬浮窗图片定义从设置移至程序内部。
+* 外部网站链接更新
+    * buildorderguide.com 暂时替换为 buildorderguide-3.vercel.app（等待其部署问题解决）。
+    * 移除 age4builder.com 链接（网站似乎已下线）。
+    * 为帝国时代2、帝国时代4和神话时代添加 RTS Builds 链接。
+    * 按钮文字由网站地址改为网站名称。
+* 帝国时代2
+    * 新增"末代酋长"（The Last Chieftains）文明（含图片）。
+* 神话时代
+    * 新增主神德墨忒尔（Demeter）（含图片）。
 
 ## [2.9.0] - 2025.11.08
-* AoE4
-    * Update for Season 12 (mainly Dynasties of the East).
+* 帝国时代4
+    * 针对第 12 赛季的更新（主要为 Dynasties of the East）。
 
 ## [2.8.1] - 2025.11.05
-* Web overlay
-    * Solve persistent spinner.
+* 网页版悬浮窗
+    * 解决加载圈（spinner）一直显示的问题。
 
 ## [2.8.0] - 2025.10.01
-* AoM
-    * Updates for Heavenly Spear DLC (Japanese pantheon).
-    * Reduce size of the images.
-* AoE2
-    * Reduce size of the images.
+* 神话时代
+    * 针对 Heavenly Spear DLC（日本万神殿）的更新。
+    * 减小图片体积。
+* 帝国时代2
+    * 减小图片体积。
 
 ## [2.7.0] - 2025.09.06
-* WC3
-    * First version of RTS Overlay for WarCraft 3 (WC3).
-* AoE4
-    * Most images updated from .png to .webp, to sync with aoe4guides.com.
-* SC2
-    * No default time in BO design.
-* Python & Web overlay
-    * When image is not found, check with different extensions (.png, .jpg, .webp).
-* Web overlay
-    * Use multiple JS files instead of a single one.
-    * Calls to external APIs to initialize a build order set as dictionary definition.
-* Python
-    * Only 'action_button' and 'icon' for the 'common' folder are now displayed in BO design panel.
-    * SC2
-        * Remove unused settings 'supply_image_height' and 'time_image_height'.
-    * Utility script `generate_pdf.py` to generate PDF from RTS BO (currently: sample only for AoE2).
+* 魔兽争霸3
+    * RTS Overlay 首个支持魔兽争霸3（WC3）的版本。
+* 帝国时代4
+    * 大部分图片从 .png 更新为 .webp，与 aoe4guides.com 保持一致。
+* 星际争霸2
+    * 建造顺序设计中不再默认填入时间。
+* Python 版与网页版悬浮窗
+    * 找不到图片时，自动尝试其他扩展名（.png、.jpg、.webp）。
+* 网页版悬浮窗
+    * 由单个 JS 文件改为多个 JS 文件。
+    * 支持调用外部 API 初始化建造顺序（以字典形式定义）。
+* Python 版
+    * 建造顺序设计面板现在仅显示 common 文件夹的 'action_button' 和 'icon' 类图片。
+    * 星际争霸2
+        * 移除未使用的设置项 'supply_image_height' 和 'time_image_height'。
+    * 新增实用脚本 `generate_pdf.py`，可从 RTS 建造顺序生成 PDF（目前仅提供帝国时代2示例）。
 
 ## [2.6.0] - 2025.06.16
-* Web overlay
-    * Pop-up message appears when displaying overlay (Always on Top).
-    * Download EXE app button.
-* AoM
-    * Add additional images.
-    * Link to DoD (Deities of Death) Clan BO website added.
-    * Added export for suggesting BO to DoD Clan.
+* 网页版悬浮窗
+    * 显示悬浮窗时弹出提示消息（关于窗口置顶）。
+    * 新增下载 EXE 程序的按钮。
+* 神话时代
+    * 补充更多图片。
+    * 新增 DoD（Deities of Death）Clan 建造顺序网站链接。
+    * 新增向 DoD Clan 投稿建造顺序的导出功能。
 
 ## [2.5.0] - 2025.05.07
-* Web overlay
-    * Web overlay visual editor added.
-* AoE2
-    * Added new images for update 141935.
-    * Three Kingdoms DLC update (new civs, new images).
-* AoE4
-    * Update most images.
+* 网页版悬浮窗
+    * 新增网页版可视化编辑器。
+* 帝国时代2
+    * 为 141935 号更新补充新图片。
+    * 三国（Three Kingdoms）DLC 更新（新文明、新图片）。
+* 帝国时代4
+    * 更新大部分图片。
 
 ## [2.4.0] - 2025.04.08
-* AoE4
-    * Updated with Season 10 content (mainly 'House of Lancaster' and 'Knights Templar' factions).
-* Python
-    * Check sub-faction folder only contains a single faction.
+* 帝国时代4
+    * 更新第 10 赛季内容（主要为"兰开斯特家族"和"圣殿骑士团"阵营）。
+* Python 版
+    * 检查子阵营文件夹仅包含单个阵营。
 
 ## [2.3.0] - 2025.03.05
-* AOM
-    * Add Chinese faction.
+* 神话时代
+    * 新增中国阵营。
 
 ## [2.2.0] - 2024.11.15
-* Web overlay
-    * Display the full BO in a single panel on a new page.
-    * Adding `gameID=xxx` at the end of the url will open the overlay with the corresponding game instead of the default AoE2.
-    * AoE4
-        * The aoe4guides.com BOs can be directly fetched through the RTS Overlay URL.
+* 网页版悬浮窗
+    * 在新页面的单个面板中显示完整建造顺序。
+    * 在网址末尾添加 `gameID=xxx`，将打开对应游戏的悬浮窗，而非默认的帝国时代2。
+    * 帝国时代4
+        * 可通过 RTS Overlay 网址直接获取 aoe4guides.com 的建造顺序。
 
 ## [2.1.0] - 2024.09.24
-* First release of Age of Mythology (AoM).
-* Python
-    * Generic function to display the BO design instructions.
-* AoE4
-    * Update images.
+* 首个支持神话时代（AoM）的版本。
+* Python 版
+    * 新增显示建造顺序设计说明的通用函数。
+* 帝国时代4
+    * 更新图片。
 
 ## [2.0.0] - 2024.08.21
-* New project folders structure.
-* Web overlay
-    * First release.
-* Python overlay
-    * Indication added in the BO search line (keywords or space).
-    * BO timer deactivated when designing a BO.
-    * Add a hide panel button.
-    * Timer hotkeys not available when hidden window.
-    * BO checking using generic function (like web overlay).
-    * Correct mouse extra button issue (for pynput).
-    * AoE2
-        * Bengalis time evalutation affected by the 2 villagers bonus.
+* 全新的项目文件夹结构。
+* 网页版悬浮窗
+    * 首个发布版本。
+* Python 版悬浮窗
+    * 建造顺序搜索栏中增加提示（关键词或空格）。
+    * 设计建造顺序时停用计时器。
+    * 新增隐藏面板按钮。
+    * 窗口隐藏时计时器快捷键不可用。
+    * 使用通用函数检查建造顺序（与网页版相同）。
+    * 修复鼠标侧键问题（pynput）。
+    * 帝国时代2
+        * 修正孟加拉 2 村民加成对时间评估的影响。
 
 ## [1.9.2] - 2024.07.09
-* Replace "mouse" with "pynput" implementation (solving Linux issue).
+* 将鼠标库由 mouse 替换为 pynput（解决 Linux 问题）。
 
 ## [1.9.1] - 2024.03.17
-* Option to keep the BO writer and hotkeys configuration always on top.
-* Add hotkeys to only start OR stop the BO timing run.
-* BO writer panel
-    * Switch to build order panel when opening the BO writer panel.
-    * Button to display the BO being built.
-    * Add BO step using resources from previous step if available.
-    * Focus on the end of the BO when formatting or adding a step.
-    * Check if BO is valid for timing and display it.
-* AoE2
-    * Do not copy sample BOs at creation (outdated BOs).
-* AoE2 & AoE4
-    * Build order timing evaluation function.
-    * Build order timing feature available (like SC2).
-    * Remove tooltip feature (generating issues with BO panel).
+* 新增选项：让建造顺序编辑器和快捷键配置窗口保持置顶。
+* 新增仅"启动"或仅"停止"建造顺序计时的快捷键。
+* 建造顺序编辑器面板
+    * 打开建造顺序编辑器面板时自动切换到建造顺序面板。
+    * 新增按钮，可显示正在编辑的建造顺序。
+    * 添加步骤时，如可用则沿用上一步的资源数值。
+    * 格式化或添加步骤时，光标聚焦到建造顺序末尾。
+    * 检查建造顺序是否支持计时并显示结果。
+* 帝国时代2
+    * 初次创建时不再复制示例建造顺序（已过时）。
+* 帝国时代2 与帝国时代4
+    * 新增建造顺序计时评估函数。
+    * 提供建造顺序计时功能（与星际争霸2相同）。
+    * 移除工具提示功能（在建造顺序面板上会引发问题）。
 
 ## [1.9.0] - 2024.02.11
-* SC2
-    * Timer feature added.
-    * BOs format updated (similar to AoE format).
+* 星际争霸2
+    * 新增计时器功能。
+    * 建造顺序格式更新（与 AoE 格式类似）。
 
 ## [1.8.0] - 2023.12.30
-* Build order writer helper added (template, format, factions/images selection).
-* Code refactoring (more code in common section).
+* 新增建造顺序编写辅助工具（模板、格式化、阵营/图片选择）。
+* 代码重构（更多代码归入 common 公共部分）。
 
 ## [1.7.1] - 2023.11.17
-* AoE4
-    * Add Season 6 content (6 new civilizations).
+* 帝国时代4
+    * 新增第 6 赛季内容（6 个新文明）。
 
 ## [1.7.0] - 2023.11.17
-* Remove game match statisics feature.
-    * Generating issues.
-    * Not working in AoE2, already available in AoE4 Overlay.
-* Reduce images size.
-* Do not include readme images in releases.
-* Only non-console version generated in releases.
+* 移除比赛统计功能。
+    * 该功能一直产生问题。
+    * 在帝国时代2中无法使用，且帝国时代4悬浮窗中已有类似功能。
+* 减小图片体积。
+* 发布包中不再包含 readme 图片。
+* 发布版本仅生成非主机（non-console）版。
 
 ## [1.6.3] - 2023.11.14
-* Back from PySide6 to PyQt5.
+* 从 PySide6 回退到 PyQt5。
 
 ## [1.6.2] - 2023.11.12
-* Correct bug with screen size check using PySide6.
+* 修复 PySide6 下屏幕尺寸检查的 bug。
 
 ## [1.6.1] - 2023.10.31
-* Correct bug preventing BO panel from appearing.
+* 修复建造顺序面板无法显示的 bug。
 
 ## [1.6.0] - 2023.10.30
-* Update from PyQt5 to PySide6.
-* Adapt `prepare_release.py` for new version of Nuitka.
-* Adapt Readme for Python installation.
-* AoE4
-    * Add 3 letters to civilization name.
-    * Update aoe4world requests for match type name.
+* 从 PyQt5 迁移到 PySide6。
+* 适配新版本 Nuitka 的 `prepare_release.py`。
+* 更新 Readme 中的 Python 安装说明。
+* 帝国时代4
+    * 文明名称后附加 3 字母缩写。
+    * 更新 aoe4world 请求中的比赛类型名称。
 
 ## [1.5.4] - 2023.10.18
-* AoE2
-    * Armenians and Georgians added (civ emblems + unique units + mule cart + fortified church).
+* 帝国时代2
+    * 新增亚美尼亚和格鲁吉亚文明（文明徽章 + 特色单位 + 骡车 + 堡垒教堂）。
 
 ## [1.5.3] - 2023.08.18
-* AoE2
-    * Last match 'leaderboard_id' safety added for aoe2.net.
-* AoE4
-    * Images updated to align with aoe4guides.com.
+* 帝国时代2
+    * 为 aoe2.net 的最近比赛 'leaderboard_id' 添加安全处理。
+* 帝国时代4
+    * 更新图片以与 aoe4guides.com 对齐。
 
 ## [1.5.2] - 2023.06.02
-* AoE2
-    * Romans added (civ emblem + unique units).
-    * Dromon picture added.
-    * aoe2.net: add safety for unknown map name.
-* AoE4
-    * Added pictures from aoe4-guides for Season 5.
+* 帝国时代2
+    * 新增罗马文明（文明徽章 + 特色单位）。
+    * 新增 Dromon 图片。
+    * aoe2.net：对未知地图名称增加安全处理。
+* 帝国时代4
+    * 新增 aoe4guides.com 第 5 赛季图片。
 
 ## [1.5.1] - 2023.04.30
-* Time only indicated if not set to empty.
-* AoE2
-    * Remove indian civ icon from selection.
-    * Civ selection using 3 letters.
-    * Remove Lithuanians 3 min drush BO (obsolete with new patch).
-    * Gambesons picture added.
-    * Add website link (and instructions) to buildorderguide.com.
-* AoE4
-    * Add website link (and instructions) to aoe4guides.com.
-    * Add missing AoE4 pictures.
+* 仅当时间不为空时才显示时间。
+* 帝国时代2
+    * 从选择列表中移除印度文明图标。
+    * 文明改用 3 字母缩写选择。
+    * 移除立陶宛 3 分钟 drush 建造顺序（新补丁下已过时）。
+    * 新增 Gambesons 图片。
+    * 新增 buildorderguide.com 网站链接（及使用说明）。
+* 帝国时代4
+    * 新增 aoe4guides.com 网站链接（及使用说明）。
+    * 补齐缺失的帝国时代4图片。
 
 ## [1.5.0] - 2023.03.22
-* SC2
-    * StarCraft 2 RTS Overlay first release.
-* AoE2
-    * Add new indian civs for match data icons.
-    * Civilization filter available.
-        * Note: BOs can be updated by adding `"civilization": "Any"` (or a specific civilization), but still works with old BO format.
-* Adding `local_config` at the root of a folder allows to use it as a local configuration folder.
-* Improving the build orders validity check.
+* 星际争霸2
+    * 星际争霸2 RTS Overlay 首个版本。
+* 帝国时代2
+    * 为比赛数据图标新增印度系文明。
+    * 提供文明筛选功能。
+        * 注：可在建造顺序中添加 `"civilization": "Any"`（或指定文明）来启用筛选，旧格式建造顺序仍然兼容。
+* 在文件夹根目录添加 `local_config` 即可将其用作本地配置文件夹。
+* 改进建造顺序有效性检查。
 
 ## [1.4.3] - 2022.12.20
-* AoE2
-    * aoe2.net is back. The API was updated accordingly.
-    * aoe2insights.com calls removed.
+* 帝国时代2
+    * aoe2.net 恢复上线，API 已相应更新。
+    * 移除对 aoe2insights.com 的调用。
 
 ## [1.4.2] - 2022.11.01
-* Keyboard and mouse hotkeys:
-    * 'Esc' can be used to cancel a hotkey configuration.
-    * Keyboard and mouse can be used as a combined hotkey (e.g. Ctrl+extra button 1).
-    * Mouse inputs can be configured in the hotkeys panel.
-* AoE4
-    * Malians and Ottomans added.
-    * Updated for Season 3 (naval units...).
-    * Correct bug related to build orders with the same name.
+* 键盘和鼠标快捷键：
+    * 可用 'Esc' 取消快捷键配置。
+    * 键盘和鼠标可组合为快捷键（如 Ctrl+鼠标侧键1）。
+    * 可在快捷键面板中配置鼠标输入。
+* 帝国时代4
+    * 新增马里和奥斯曼文明。
+    * 针对第 3 赛季的更新（海战单位等）。
+    * 修复同名建造顺序的相关 bug。
 
 ## [1.4.1] - 2022.10.18
-* Mouse keys can be used instead of hotkeys.
-* AoE2
-    * The website https://www.aoe2insights.com can be used to get the match data, instead of https://aoe2.net (currently down).
-    * The match data panel can be disabled, or set to use either https://www.aoe2insights.com or https://aoe2.net.
+* 可用鼠标按键代替快捷键。
+* 帝国时代2
+    * 比赛数据可改从 https://www.aoe2insights.com 获取，替代 https://aoe2.net（当前宕机）。
+    * 比赛数据面板可禁用，或设置为使用 https://www.aoe2insights.com 或 https://aoe2.net。
 
 ## [1.4.0] - 2022.10.02
-* Hotkeys can be updated by reloading the settings.
-* Hotkeys can be configured with a dedicated panel, without going in the settings file.
-* Build orders can be added in a dedicated panel, without having to create a file manually.
-* Builders can be indicated in the resources (optional).
-* Settings and build orders are saved in user folder.
+* 重新加载设置即可更新快捷键。
+* 可通过专用面板配置快捷键，无需修改设置文件。
+* 可通过专用面板添加建造顺序，无需手动创建文件。
+* 可在资源栏标注建造者人数（可选）。
+* 设置和建造顺序保存到用户文件夹。
 
 ## [1.3.4] - 2022.09.11
-* Resource targets can be split between different resource subtypes, by hovering the mouse.
-    * A tooltip appears on a separate window (if build order adapted for it).
-* The search bar for the build order performs a fuzzy search to find the best build orders. 
-* AoE2
-    * Villagers and age only indicated if information available.
-* AoE4
-    * Villagers, population and age only indicated if information available.
+* 通过鼠标悬停，可将资源目标拆分到不同资源子类型。
+    * 会在单独的窗口中显示提示（需建造顺序支持）。
+* 建造顺序搜索栏支持模糊搜索，以找到最匹配的建造顺序。
+* 帝国时代2
+    * 村民和时代仅在信息可用时显示。
+* 帝国时代4
+    * 村民、人口和时代仅在信息可用时显示。
 
 ## [1.3.3] - 2022.07.24
-* AoE2
-    * Add safety mechanisms and additional search for data fetch from https://aoe2.net.
+* 帝国时代2
+    * 为从 https://aoe2.net 获取数据增加安全机制与备用搜索。
 
 ## [1.3.2] - 2022.07.24
-* Use requests library for url requests.
-* Settings subclass usage for easier settings description.
-* AoE2
-    * Small modification for chinese_scouts_into_archers.json.
-* AoE4
-    * Correct build orders typos.
-    * Use aoe4world.com to fetch match statistics.
+* 改用 requests 库进行网络请求。
+* 使用设置子类，便于描述配置项。
+* 帝国时代2
+    * 对 chinese_scouts_into_archers.json 的小修改。
+* 帝国时代4
+    * 修正建造顺序中的拼写错误。
+    * 改用 aoe4world.com 获取比赛统计。
 
 ## [1.3.1] - 2022.06.22
-* Remove 'utf-8' to solve issues encountered on Linux with Python 10.
+* 移除 'utf-8' 参数，解决 Linux 上 Python 10 的问题。
 
 ## [1.3.0] - 2022.06.14
-* Using global hotkeys to change panel, show/hide overlay and select the build order step.
-* Borders of the search boxes forced to white (to correct Windows 11 artifact).
-* Add source files to the release versions.
+* 支持用全局快捷键切换面板、显示/隐藏悬浮窗和选择建造顺序步骤。
+* 搜索框边框强制为白色（修复 Windows 11 显示异常）。
+* 发布版本中加入源代码文件。
 
 ## [1.2.0] - 2022.06.06
-* Clicking on the build order name to select it.
-* Time can be added in any step of a build order and appears next to resources.
-* Numbers of BOs displayed up to 15 (from 10), for AoE2 and AoE4.
+* 点击建造顺序名称即可选中。
+* 可在建造顺序任意步骤中添加时间，显示在资源旁。
+* 帝国时代2和帝国时代4的建造顺序显示数量由 10 增至 15。
 
 ## [1.1.2] - 2022.06.05
-* Safety added so that the overlay starts inside the screen.
-* Settings saved at launch if no settings file existing.
-* Numbers of BOs displayed up to 10 (from 5), for AoE2 and AoE4.
+* 增加保护机制，确保悬浮窗启动在屏幕范围内。
+* 启动时若无设置文件则自动保存。
+* 帝国时代2和帝国时代4的建造顺序显示数量由 5 增至 10。
 
 ## [1.1.1] - 2022.06.05
-* AoE4
-    * HRE BO added : fast castle imperial
-    * Chinese BO added:
-        * song dynasty 2 town centers
-        * song dynasty military
+* 帝国时代4
+    * 新增神圣罗马帝国（HRE）建造顺序：快速城堡转帝王（fast castle imperial）
+    * 新增中国建造顺序：
+        * 宋朝双城镇中心（song dynasty 2 town centers）
+        * 宋朝军事（song dynasty military）
 
 ## [1.1.0] - 2022.05.31
-* Possibility to have BOs with the same name, provided they have different key values.
-    * Used to deal with BOs with the same name for different civilizations in AoE4.
+* 允许同名建造顺序，只要键值不同即可。
+    * 用于处理帝国时代4中不同文明同名建造顺序的情况。
 
 ## [1.0.1] - 2022.05.31
-* AoE4
-    * Delhi BO added : sacred sites horsemen archers
-    * Mongols BO added: fast castle lancers
-    * Rus BO added: feudal knights archers
-    * Abbasid BO added: 2 town centers
-    * Civilization flags pictures with space added.
+* 帝国时代4
+    * 新增德里建造顺序：圣地+骑兵+射手（sacred sites horsemen archers）
+    * 新增蒙古建造顺序：快速城堡枪骑兵（fast castle lancers）
+    * 新增罗斯建造顺序：封建骑士射手（feudal knights archers）
+    * 新增阿拔斯建造顺序：双城镇中心（2 town centers）
+    * 新增名称中带空格的文明旗帜图片。
 
 ## [1.0.0] - 2022.05.16
-* First release.
+* 首个发布版本。
