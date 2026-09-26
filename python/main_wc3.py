@@ -6,6 +6,10 @@ from PyQt5.QtCore import QTimer
 
 from wc3.wc3_game_overlay import WC3GameOverlay
 
+# install the Chinese UI layer before creating any window
+from common.chinese_locale import install as install_chinese_ui
+install_chinese_ui()
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     window = WC3GameOverlay(app=app, directory_main=str(pathlib.Path(__file__).parent.resolve()))

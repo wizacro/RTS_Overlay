@@ -7,6 +7,7 @@ from PyQt5.QtCore import Qt
 
 from common.useful_tools import set_background_opacity, OverlaySequenceEdit, widget_x_end, widget_y_end
 from common.rts_settings import RTSHotkeys, KeyboardMouse, RTSHotkeysConfigurationLayout
+from common.chinese_locale import t  # Chinese UI layer (translation of the manual text)
 
 
 class HotkeysWindow(QMainWindow):
@@ -54,7 +55,7 @@ class HotkeysWindow(QMainWindow):
         self.opacity = panel_settings.opacity
 
         # text for the manual describing how to set up the hotkeys
-        manual_text: str = (
+        manual_text: str = t(
             'Set hotkey sequence or \'Esc\' to cancel. Click on \'Update hotkeys\' to confirm your choice.'
             '\n\nClick on the mouse checkbox to consider \'L\' as left click, \'R\' as right click, '
             '\'M\' as middle button,\n\'1\' as first extra button and \'2\' as second extra button.'

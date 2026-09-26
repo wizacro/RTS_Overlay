@@ -14,6 +14,8 @@ from typing import Dict, Union
 from PyQt5.QtWidgets import QDialog, QMainWindow, QApplication, QLabel, QLineEdit
 from PyQt5.QtWidgets import  QMessageBox, QTextEdit, QVBoxLayout, QPushButton, QGridLayout
 from PyQt5.QtWidgets import QWidget, QComboBox, QShortcut
+
+from common.chinese_locale import t  # Chinese UI layer (translation of dynamic message parts)
 from PyQt5.QtGui import QKeySequence, QFont, QIcon, QCursor
 from PyQt5.QtCore import Qt, QPoint, QSize
 
@@ -1082,7 +1084,7 @@ class RTSGameOverlay(QMainWindow):
             # Check if the build order is valid
             valid_bo, bo_error_msg = self.check_valid_build_order(json_data)
             if not valid_bo:
-                show_message_box(QMessageBox.Warning, "Error", f"Invalid build order format: {bo_error_msg}")
+                show_message_box(QMessageBox.Warning, "Error", t("Invalid build order format") + f": {bo_error_msg}")
                 return
 
             # Get name from the build order
@@ -1103,7 +1105,7 @@ class RTSGameOverlay(QMainWindow):
 
         # Check if a file with the same name already exists
         if os.path.exists(filepath):
-            show_message_box(QMessageBox.Warning, "Error", f"A build order with the name '{build_order_name}' already exists.")
+            show_message_box(QMessageBox.Warning, "Error", t("Build order name already exists") + f": '{build_order_name}'")
             return
 
         # Save the text to a file
@@ -1112,12 +1114,12 @@ class RTSGameOverlay(QMainWindow):
                 f.write(pasted_text)
 
             # Success popup
-            show_message_box(QMessageBox.Information, "Success", f"Build order saved as: {filename}")
+            show_message_box(QMessageBox.Information, "Success", t("Build order saved as") + f": {filename}")
 
             dialog.accept()  # Close the dialog
             self.reload(update_settings=True)  # Reload build orders
         except Exception as e:
-            show_message_box(QMessageBox.Critical, "Error", f"Failed to save build order: {str(e)}")
+            show_message_box(QMessageBox.Critical, "Error", t("Failed to save build order") + f": {str(e)}")
 
     def get_hotkey_mouse_flag(self, name: str) -> bool:
         """Get the flag value for a global hotkey and/or mouse input.
@@ -2094,7 +2096,7 @@ class RTSGameOverlay(QMainWindow):
         """Update the build order step label."""
         if self.selected_panel == PanelID.BUILD_ORDER:
             self.build_order_step_time.setText(
-                f'Step: {self.selected_build_order_step_id + 1}/{self.selected_build_order_step_count}'
+                f'{t("Step")}: {self.selected_build_order_step_id + 1}/{self.selected_build_order_step_count}'
             )
 
     def update_build_order_time_label(self):
