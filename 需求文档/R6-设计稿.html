@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>R6 设计稿 — 流程要点窗口</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #2b2b2b; font-family: "Microsoft YaHei", sans-serif; padding: 24px; font-size: 15px; color: #222; }
+  .page { max-width: 900px; margin: 0 auto; }
+  h1 { font-size: 20px; margin-bottom: 4px; }
+  .sub { color: #888; font-size: 13px; margin-bottom: 20px; }
+  h2 { font-size: 16px; margin: 26px 0 10px; border-left: 4px solid #4a86d8; padding-left: 10px; }
+  .desc { color: #777; font-size: 13px; margin-bottom: 14px; line-height: 1.7; }
+
+  /* ===== 弹窗模拟（浅色，与管理器一致） ===== */
+  .window { width: 620px; margin: 0 auto; background: #f5f5f5; border: 1px solid #999;
+    border-radius: 8px; overflow: hidden; box-shadow: 0 10px 34px rgba(0,0,0,.4); }
+  .titlebar { background: linear-gradient(#e8e9eb, #d7d9dd); color: #333; padding: 7px 12px;
+    font-size: 13px; display: flex; justify-content: space-between; }
+  .titlebar .btns { color: #888; letter-spacing: 6px; }
+  .body { padding: 16px 18px; }
+
+  .headline { font-size: 19px; font-weight: bold; color: #14406e; margin-bottom: 8px; }
+  .meta { color: #777; font-size: 13px; margin-bottom: 14px; }
+  .meta b { color: #333; }
+
+  .section { margin-top: 16px; }
+  .section .st { font-size: 15px; font-weight: bold; margin-bottom: 10px; }
+  .section .st .ico { margin-right: 6px; }
+  .items { display: flex; gap: 14px; flex-wrap: wrap; }
+  .item { width: 96px; background: #fff; border: 1px solid #c9c9c9; border-radius: 6px;
+    padding: 10px 6px 8px; text-align: center; }
+  .item img { height: 40px; }
+  .item .nm { font-size: 13px; margin-top: 6px; color: #333; line-height: 1.3; }
+  .item .en { font-size: 11px; color: #999; }
+
+  .tip { margin-top: 18px; padding: 10px 12px; background: #fff7e0; border: 1px solid #ecd28f;
+    border-radius: 6px; font-size: 13px; color: #7a5b00; line-height: 1.6; }
+
+  .actions { margin-top: 18px; text-align: right; }
+  .btn { display: inline-block; background: #d8e7fb; border: 1px solid #4a86d8; color: #14406e;
+    padding: 8px 18px; border-radius: 4px; font-size: 14px; font-weight: bold; }
+
+  .note { margin-top: 22px; padding: 12px 14px; background: #e7f0fb; border: 1px solid #9fc1e8;
+    border-radius: 6px; color: #2a4a6b; font-size: 13px; line-height: 1.8; }
+</style>
+</head>
+<body>
+<div class="page">
+  <h1>R6 设计稿 — "流程要点"提示窗口</h1>
+  <div class="sub">确认用设计稿 · 数据来自你真实导入的"29+2+2 Fast Imperial"流程 · 浅色主题与管理器一致</div>
+
+  <h2>弹出时机与样式</h2>
+  <div class="desc">点击管理器"开启悬浮窗"时，先弹出本窗口（普通窗口、不置顶），展示该流程的主要兵种与主要科技；点"开始游戏"关闭后悬浮窗开启。展示页的"流程要点"按钮随时可再次打开。</div>
+
+  <div class="window">
+    <div class="titlebar"><span>流程要点：29+2+2 Fast Imperial</span><span class="btns">✕</span></div>
+    <div class="body">
+      <div class="headline">29+2+2 Fast Imperial</div>
+      <div class="meta">文明：<b>Turks</b> ｜ 步骤：<b>10 步</b> ｜ 来源：buildorderguide.com</div>
+
+      <div class="section">
+        <div class="st"><span class="ico">⚔</span>主要兵种（按流程出现顺序）</div>
+        <div class="items">
+          <div class="item"><img src="/docs/assets/aoe2/monastery/Monk_aoe2DE.webp" alt="僧侣"><div class="nm">僧侣</div></div>
+          <div class="item"><img src="/docs/assets/aoe2/archery_range/Hand_cannoneer_aoe2DE.webp" alt="手炮兵"><div class="nm">手炮兵</div></div>
+          <div class="item"><img src="/docs/assets/aoe2/siege_workshop/Bombard_cannon_aoe2DE.webp" alt="巨型投石机"><div class="nm">巨型投石机</div></div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="st"><span class="ico">🔬</span>主要科技（按流程出现顺序）</div>
+        <div class="items">
+          <div class="item"><img src="/docs/assets/aoe2/lumber_camp/DoubleBitAxe_aoe2DE.webp" alt="双刃斧"><div class="nm">双刃斧</div></div>
+          <div class="item"><img src="/docs/assets/aoe2/mining_camp/GoldShaftMiningDE.webp" alt="采金"><div class="nm">采金</div></div>
+          <div class="item"><img src="/docs/assets/aoe2/blacksmith/PaddedArcherArmorDE.webp" alt="弓箭手护甲"><div class="nm">弓箭手护甲</div></div>
+        </div>
+      </div>
+
+      <div class="tip">💡 建议进游戏前把流程说明浏览一遍，记住本页的重点科技与兵种；游戏内用悬浮窗按钮或全局快捷键逐步推进。</div>
+
+      <div class="actions"><span class="btn">开始游戏，关闭</span></div>
+    </div>
+  </div>
+
+  <h2>提取规则（实现逻辑）</h2>
+  <div class="desc">
+    ① 遍历流程全部步骤的说明文字，收集 <b>@图标@</b> 标记（扩展名自动匹配 webp/png/jpg）；<br>
+    ② 按内置分类表归类：<b>兵种 / 科技</b>；建筑、村民、资源、动物、时代图标<b>排除</b>；<br>
+    ③ 按流程中<b>首次出现的顺序</b>去重排列，图标下显示中文名（未收录条目显示英文原名，分类表可持续补充）；<br>
+    ④ 未知图标按所在建筑文件夹兜底（马厩/兵营等→兵种候选，铁匠铺/大学等→科技候选），建筑本体的图标自动排除。
+  </div>
+
+  <div class="note">
+    说明：① 弹窗为普通窗口（不置顶），关闭后不影响悬浮窗开启；② 展示页每次选中不同流程时，本窗口内容同步刷新，展示页另有"流程要点"按钮随时打开；③ 深色主题下配色随管理器主题切换；④ 分类表存为数据文件，可持续补充中文条目。
+  </div>
+</div>
+</body>
+</html>

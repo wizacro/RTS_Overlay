@@ -1,0 +1,166 @@
+{
+    "name": "29+2+2 Fast Imperial",
+    "civilization": "Turks",
+    "author": "Hera",
+    "source": "https://buildorderguide.com",
+    "description": "29+2+2 Turk Fast Imperial",
+    "build_order": [
+        {
+            "age": 1,
+            "villager_count": 6,
+            "resources": {
+                "wood": 0,
+                "food": 6,
+                "gold": 0,
+                "stone": 0
+            },
+            "notes": [
+                "6 on @animal/Sheep_aoe2DE.png@",
+                "4 on @resource/Aoe2de_wood.png@",
+                "1 Lures @animal/Boar_aoe2DE.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 12,
+            "resources": {
+                "wood": 4,
+                "food": 8,
+                "gold": 0,
+                "stone": 0
+            },
+            "notes": [
+                "@mill/Mill_aoe2de.png@ + 1 on @resource/BerryBushDE.png@",
+                "2 on @resource/BerryBushDE.png@",
+                "Push 3 @animal/Deer_aoe2DE.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 15,
+            "resources": {
+                "wood": 4,
+                "food": 11,
+                "gold": 0,
+                "stone": 0
+            },
+            "notes": [
+                "1 Lures @animal/Boar_aoe2DE.png@",
+                "@other/House_aoe2DE.png@ + 1 on @resource/BerryBushDE.png@",
+                "3 on @resource/Aoe2de_food.png@ Under @town_center/Towncenter_aoe2DE.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 23,
+            "resources": {
+                "wood": 8,
+                "food": 15,
+                "gold": 0,
+                "stone": 0
+            },
+            "notes": [
+                "4 on @resource/Aoe2de_wood.png@",
+                "Make @mill/FarmDE.png@ with your @animal/Sheep_aoe2DE.png@ @resource/MaleVillDE.jpg@ ",
+                "5 on @resource/Aoe2de_gold.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 28,
+            "resources": {
+                "wood": 8,
+                "food": 15,
+                "gold": 5,
+                "stone": 0
+            },
+            "notes": [
+                "Research 29 Pop @age/FeudalAgeIconDE_alpha.png@",
+                "Before @age/FeudalAgeIconDE_alpha.png@",
+                "perfect landing time: 12:35",
+                "As hunt finishes, move 1 @resource/MaleVillDE.jpg@ to @resource/BerryBushDE.png@ and 3 @resource/MaleVillDE.jpg@ to straggler trees"
+            ]
+        },
+        {
+            "age": 2,
+            "villager_count": 28,
+            "resources": {
+                "wood": 8,
+                "food": 15,
+                "gold": 5,
+                "stone": 0
+            },
+            "notes": [
+                "Send 1 @resource/MaleVillDE.jpg@ to make a @blacksmith/Blacksmith_aoe2de.png@",
+                "Send 2 @resource/MaleVillDE.jpg@ to make a @market/Market_aoe2DE.png@ (usually the ones on straggler trees)",
+                "2 on @resource/Aoe2de_gold.png@"
+            ]
+        },
+        {
+            "age": 2,
+            "villager_count": 30,
+            "resources": {
+                "wood": 8,
+                "food": 15,
+                "gold": 7,
+                "stone": 0
+            },
+            "notes": [
+                "Research @age/CastleAgeIconDE_alpha.png@",
+                "Before @age/CastleAgeIconDE_alpha.png@ perfect landing time: 16:05",
+                "Send the @resource/MaleVillDE.jpg@ that made the feudal buildings to @mill/FarmDE.png@",
+                "Research @lumber_camp/DoubleBitAxe_aoe2DE.png@ + @mining_camp/GoldShaftMiningDE.png@",
+                "Sell 200 @resource/Aoe2de_stone.png@"
+            ]
+        },
+        {
+            "age": 3,
+            "villager_count": 32,
+            "resources": {
+                "wood": 8,
+                "food": 15,
+                "gold": 9,
+                "stone": 0
+            },
+            "notes": [
+                "In @age/CastleAgeIconDE_alpha.png@",
+                "2 on @resource/Aoe2de_gold.png@",
+                "Send 3 @resource/MaleVillDE.jpg@ from @resource/Aoe2de_wood.png@ to make a @siege_workshop/Siege_workshop_aoe2DE.png@ and @monastery/MonasteryAoe2DE.png@",
+                "Research @age/ImperialAgeIconDE_alpha.png@"
+            ]
+        },
+        {
+            "age": 4,
+            "villager_count": 32,
+            "resources": {
+                "wood": 8,
+                "food": 15,
+                "gold": 9,
+                "stone": 0
+            },
+            "notes": [
+                "Before @age/ImperialAgeIconDE_alpha.png@",
+                "perfect landing time: 20:05",
+                "As @resource/BerryBushDE.png@ expire, move the @resource/MaleVillDE.jpg@ to a second @mining_camp/Mining_camp_aoe2de.png@",
+                "Use the @market/Market_aoe2DE.png@ to get enough @resource/Aoe2de_wood.png@ to make a @barracks/Barracks_aoe2DE.png@ and 2 @archery_range/Archery_range_aoe2DE.png@",
+                "Research @blacksmith/PaddedArcherArmorDE.png@",
+                "[Optional] Make a @monastery/Monk_aoe2DE.png@ and pick up relics"
+            ]
+        },
+        {
+            "age": 4,
+            "villager_count": 32,
+            "resources": {
+                "wood": 8,
+                "food": 15,
+                "gold": 9,
+                "stone": 0
+            },
+            "notes": [
+                "In @age/ImperialAgeIconDE_alpha.png@",
+                "Keep making @resource/MaleVillDE.jpg@ and send them to whichever resources you need",
+                "Make @archery_range/Hand_cannoneer_aoe2DE.png@ from 2 @archery_range/Archery_range_aoe2DE.png@ and make 1-2 @siege_workshop/Bombard_cannon_aoe2DE.png@"
+            ]
+        }
+    ]
+}

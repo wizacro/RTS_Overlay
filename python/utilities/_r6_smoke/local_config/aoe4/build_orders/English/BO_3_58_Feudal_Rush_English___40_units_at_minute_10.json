@@ -1,0 +1,219 @@
+{
+    "description": "wa",
+    "civilization": "English",
+    "name": "3:58 Feudal Rush English | 40 units at minute 10",
+    "author": "Valdemar1902",
+    "source": "https://aoe4guides.com/builds/d51upkMZjiReI6tsATF5",
+    "build_order": [
+        {
+            "age": 1,
+            "population_count": -1,
+            "time": "0:00",
+            "villager_count": 6,
+            "resources": {
+                "food": 6,
+                "wood": 0,
+                "gold": 0,
+                "stone": 0,
+                "builder": -1
+            },
+            "notes": [
+                "6@unit_worker/villager.png@ to @resource/sheep.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "population_count": -1,
+            "time": "0:21",
+            "villager_count": 7,
+            "resources": {
+                "food": 6,
+                "wood": 0,
+                "gold": 1,
+                "stone": 0,
+                "builder": -1
+            },
+            "notes": [
+                "1@unit_worker/villager.png@ to @resource/resource_gold.png@ and build @building_economy/house.png@->@building_economy/mining-camp.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "population_count": -1,
+            "time": "0:41",
+            "villager_count": 8,
+            "resources": {
+                "food": 7,
+                "wood": 0,
+                "gold": 1,
+                "stone": 0,
+                "builder": -1
+            },
+            "notes": [
+                "1@unit_worker/villager.png@ to @resource/sheep.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "population_count": -1,
+            "time": "1:01",
+            "villager_count": 10,
+            "resources": {
+                "food": 7,
+                "wood": 0,
+                "gold": 3,
+                "stone": 0,
+                "builder": -1
+            },
+            "notes": [
+                "2@unit_worker/villager.png@ to @resource/resource_gold.png@ then @resource/rally.png@ new @unit_worker/villager.png@ to @resource/sheep.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "population_count": -1,
+            "time": "2:07",
+            "villager_count": -1,
+            "resources": {
+                "food": 9,
+                "wood": 3,
+                "gold": 0,
+                "stone": 0,
+                "builder": -1
+            },
+            "notes": [
+                "When 3900 left in @resource/resource_gold.png@ vein pull ALL @unit_worker/villager.png@@resource/resource_gold.png@ to @building_economy/lumber-camp.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "population_count": -1,
+            "time": "2:11",
+            "villager_count": 12,
+            "resources": {
+                "food": 5,
+                "wood": 3,
+                "gold": 0,
+                "stone": 0,
+                "builder": 4
+            },
+            "notes": [
+                "@age/age_2.png@ with @landmark_english/council-hall.png@ with 4@unit_worker/villager.png@@resource/sheep.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "population_count": -1,
+            "time": "2:21",
+            "villager_count": 13,
+            "resources": {
+                "food": 6,
+                "wood": 3,
+                "gold": 0,
+                "stone": 0,
+                "builder": 4
+            },
+            "notes": [
+                "1 new @unit_worker/villager.png@ to @resource/sheep.png@ then rally @resource/resource_wood.png@ until 11@unit_worker/villager.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "population_count": -1,
+            "time": "3:20",
+            "villager_count": 15,
+            "resources": {
+                "food": 6,
+                "wood": 5,
+                "gold": 0,
+                "stone": 0,
+                "builder": 4
+            },
+            "notes": [
+                "1 age up-@unit_worker/villager.png@ builds @building_military/barracks.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "population_count": -1,
+            "time": "3:35",
+            "villager_count": 16,
+            "resources": {
+                "food": 6,
+                "wood": 6,
+                "gold": 0,
+                "stone": 0,
+                "builder": 4
+            },
+            "notes": [
+                "another age up-@unit_worker/villager.png@ builds @building_economy/house.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "population_count": -1,
+            "villager_count": -1,
+            "resources": {
+                "food": 0,
+                "wood": 0,
+                "gold": 0,
+                "stone": 0,
+                "builder": -1
+            },
+            "notes": [
+                "All age up @unit_worker/villager.png@go back to @resource/sheep.png@ when finished constructing @landmark_english/council-hall.png@"
+            ]
+        },
+        {
+            "age": 2,
+            "population_count": -1,
+            "time": "3:58",
+            "villager_count": 18,
+            "resources": {
+                "food": 10,
+                "wood": 8,
+                "gold": 0,
+                "stone": 0,
+                "builder": -1
+            },
+            "notes": [
+                "@age/age_2.png@: Instantly queue @unit_english/longbowman-2.png@@unit_infantry/spearman-1.png@ and send them forward. Only build units and focus wood."
+            ]
+        },
+        {
+            "age": 2,
+            "population_count": -1,
+            "time": "5:24",
+            "villager_count": -1,
+            "resources": {
+                "food": 0,
+                "wood": 0,
+                "gold": 0,
+                "stone": 0,
+                "builder": -1
+            },
+            "notes": [
+                "1@unit_worker/villager.png@ to @resource/resource_food.png@ then @resource/rally.png@ @resource/resource_wood.png@ again<br>"
+            ]
+        },
+        {
+            "age": 2,
+            "population_count": -1,
+            "villager_count": -1,
+            "resources": {
+                "food": 0,
+                "wood": 0,
+                "gold": 0,
+                "stone": 0,
+                "builder": -1
+            },
+            "notes": [
+                "Slowly add in @building_economy/farm.png@when you have @resource/resource_wood.png@ surplus. Later on, add 3 @unit_worker/villager.png@to @resource/resource_gold.png@ for @building_technology/blacksmith.png@ (@technology_military/steeled-arrow.png@+@technology_military/iron-undermesh.png@)<br>At minute 10 you should have around 40 units. Balance @unit_english/longbowman-2.png@ / @unit_infantry/spearman-1.png@ according to opponent composition. Add in @unit_infantry/man-at-arms-1.png@ if opponent is Archer Heavy<br><br>When 3 sets of @building_economy/farm.png@ (24) go @age/age_3.png@@landmark_english/kings-palace.png@ into @unit_infantry/man-at-arms-1.png@@technology_english/armor-clad.png@@technology_military/wedge-rivets.png@ ( if opponent is feudal) <b>OR</b> @unit_cavalry/knight-2.png@@resource/relics.png@@technology_military/wedge-rivets.png@(If opponent is castle or going castle)  <br><br>See video for more tips.<br>"
+            ]
+        }
+    ],
+    "video": "https://www.youtube.com/embed/KnhHP7oJ-ks",
+    "season": "Season 5",
+    "map": "Open",
+    "strategy": "Rush"
+}

@@ -1,0 +1,106 @@
+{
+    "name": "Hera Chinese",
+    "civilization": "Chinese",
+    "author": "Hera",
+    "source": "https://www.youtube.com/watch?v=EKZThgQulOg",
+    "description": "Hera build from video \"How To Do The Chinese Opening 2024\" - https://www.youtube.com/watch?v=EKZThgQulOg Notes: - Use \"drop off\" hotkeys on villagers to quickly update the food count and start (and continue) creating villagers as soon as possible -",
+    "build_order": [
+        {
+            "age": 1,
+            "villager_count": 7,
+            "resources": {
+                "wood": 0,
+                "food": 7,
+                "gold": 0,
+                "stone": 0
+            },
+            "notes": [
+                "7 on @animal/Sheep_aoe2DE.png@",
+                "3 on @resource/Aoe2de_wood.png@",
+                "1 @animal/Sheep_aoe2DE.png@ \u2192 1 @animal/Boar_aoe2DE.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 11,
+            "resources": {
+                "wood": 3,
+                "food": 7,
+                "gold": 0,
+                "stone": 0,
+                "builder": 1
+            },
+            "notes": [
+                "2 @other/House_aoe2DE.png@ + @mill/Mill_aoe2de.png@",
+                "Push 1 @animal/Deer_aoe2DE.png@",
+                "1 @resource/BerryBushDE.png@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 14,
+            "resources": {
+                "wood": 3,
+                "food": 11,
+                "gold": 0,
+                "stone": 0
+            },
+            "notes": [
+                "Lure @animal/Boar_aoe2DE.png@, 7 on @animal/Boar_aoe2DE.png@",
+                "3 on @resource/BerryBushDE.png@",
+                "Research 21 Pop @age/FeudalAgeIconDE_alpha.png@"
+            ]
+        },
+        {
+            "age": 2,
+            "villager_count": 20,
+            "resources": {
+                "wood": 10,
+                "food": 9,
+                "gold": 0,
+                "stone": 0,
+                "builder": 1
+            },
+            "notes": [
+                "@barracks/Barracks_aoe2DE.png@",
+                "2 @animal/Boar_aoe2DE.png@ \u2192 2 @resource/Aoe2de_wood.png@",
+                "@lumber_camp/Lumber_camp_aoe2de.png@",
+                "5 @animal/Boar_aoe2DE.png@ \u2192 5 @resource/Aoe2de_wood.png@"
+            ]
+        },
+        {
+            "age": 2,
+            "villager_count": 22,
+            "resources": {
+                "wood": 10,
+                "food": 11,
+                "gold": 0,
+                "stone": 0,
+                "builder": 1
+            },
+            "notes": [
+                "In @age/FeudalAgeIconDE_alpha.png@",
+                "2 on @animal/Sheep_aoe2DE.png@",
+                "Research @lumber_camp/DoubleBitAxe_aoe2DE.png@ + @mill/HorseCollarDE.png@",
+                "@stable/Stable_aoe2DE.png@"
+            ]
+        },
+        {
+            "age": 2,
+            "villager_count": 22,
+            "resources": {
+                "wood": 10,
+                "food": 11,
+                "gold": 0,
+                "stone": 0,
+                "builder": 1
+            },
+            "notes": [
+                "3 @other/House_aoe2DE.png@",
+                "@defensive_structures/Palisade_wall_aoe2de.png@",
+                "Train 3 @stable/Scoutcavalry_aoe2DE.png@",
+                "Seed 10 @mill/FarmDE.png@"
+            ]
+        }
+    ]
+}

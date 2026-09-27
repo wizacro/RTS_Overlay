@@ -9,6 +9,7 @@ from common.rts_overlay_images import RTSOverlayImages
 from aoe2.aoe2_settings import AoE2OverlaySettings
 from aoe2.aoe2_build_order import check_valid_aoe2_build_order, aoe2_build_order_sorting
 from aoe2.aoe2_civ_icon import aoe2_civilization_icon, get_aoe2_faction_selection
+from aoe2.aoe2_icon_info import AOE2_ICON_INFO
 
 
 class AoE2Images(RTSOverlayImages):
@@ -52,6 +53,9 @@ class AoE2GameOverlay(RTSGameOverlay):
             get_faction_selection=get_aoe2_faction_selection,
             build_order_timer_step_starting_flag=False,
         )
+
+        # icon classification for the manager highlights window
+        self.icon_classification = AOE2_ICON_INFO
 
         # civilization filter specification (used by the manager window)
         self.faction_filter_specs = [

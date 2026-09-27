@@ -1,0 +1,168 @@
+{
+    "timer_available": true,
+    "call_ms": 20,
+    "panel_hotkeys": {
+        "stay_on_top": false,
+        "font_police": "Arial",
+        "font_size": 11,
+        "color_font": [
+            255,
+            255,
+            255
+        ],
+        "color_background": [
+            30,
+            30,
+            30
+        ],
+        "opacity": 0.8,
+        "border_size": 20,
+        "edit_width": 200,
+        "edit_height": 30,
+        "button_margin": 5,
+        "vertical_spacing": 10,
+        "section_vertical_spacing": 20,
+        "horizontal_spacing": 10,
+        "mouse_height": 25,
+        "mouse_spacing": 30
+    },
+    "title": "SC2 Overlay",
+    "layout": {
+        "opacity": 0.75,
+        "overlay_on_right_side": true,
+        "upper_left_position": [
+            65,
+            65
+        ],
+        "upper_right_position": [
+            780,
+            65
+        ],
+        "border_size": 15,
+        "vertical_spacing": 10,
+        "horizontal_spacing": 6,
+        "font_police": "Arial",
+        "font_size": 11,
+        "scaling": 100,
+        "color_default": [
+            255,
+            255,
+            255
+        ],
+        "color_background": [
+            30,
+            30,
+            30
+        ],
+        "action_button_size": 22,
+        "action_button_spacing": 8,
+        "show_time_resource": true,
+        "configuration": {
+            "font_size_limits": [
+                6,
+                25
+            ],
+            "scaling_list": [
+                50,
+                60,
+                70,
+                80,
+                90,
+                100,
+                110,
+                120,
+                130,
+                140,
+                150,
+                175,
+                200,
+                225,
+                250,
+                275,
+                300
+            ],
+            "build_order_search_size": [
+                240,
+                30
+            ],
+            "build_order_selection_vertical_spacing": 3,
+            "selected_build_order_color": [
+                230,
+                159,
+                0
+            ],
+            "hovering_build_order_color": [
+                204,
+                102,
+                0
+            ],
+            "bo_list_max_count": 10,
+            "bo_list_fuzz_search": true,
+            "bo_list_fuzz_score_cutoff": 50,
+            "icon_select_size": [
+                32,
+                32
+            ]
+        },
+        "build_order": {
+            "image_height": 35,
+            "resource_spacing": 3,
+            "bo_next_tab_spacing": 30,
+            "height_line_notes": 3,
+            "color_line_notes": [
+                168,
+                177,
+                183
+            ],
+            "show_time_in_notes": true,
+            "color_row_emphasis": [
+                0,
+                51,
+                102
+            ],
+            "extra_emphasis_height": 3
+        }
+    },
+    "hotkeys": {
+        "mouse_accepted_values": "'left', 'middle', 'right', 'x', 'x2', '' (unset)",
+        "enter": "Return",
+        "select_next_build_order": "Tab",
+        "next_panel": {
+            "keyboard": "",
+            "mouse": ""
+        },
+        "show_hide": {
+            "keyboard": "",
+            "mouse": ""
+        },
+        "build_order_previous_step": {
+            "keyboard": "",
+            "mouse": ""
+        },
+        "build_order_next_step": {
+            "keyboard": "",
+            "mouse": ""
+        },
+        "mouse_max_time": 0.1,
+        "switch_timer_manual": {
+            "keyboard": "",
+            "mouse": ""
+        },
+        "start_timer": {
+            "keyboard": "",
+            "mouse": ""
+        },
+        "stop_timer": {
+            "keyboard": "",
+            "mouse": ""
+        },
+        "start_stop_timer": {
+            "keyboard": "",
+            "mouse": ""
+        },
+        "reset_timer": {
+            "keyboard": "",
+            "mouse": ""
+        }
+    }
+}

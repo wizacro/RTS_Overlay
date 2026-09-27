@@ -169,6 +169,14 @@ TRANSLATIONS = {
     'Click twice to hide': '连点两次隐藏悬浮窗',
     'Click again to hide': '再点一次确认隐藏',
     'Click to switch between move and fixed modes': '点击切换 移动模式/固定模式',
+    'Build order highlights': '流程要点',
+    'Main units (in build order appearance order)': '主要兵种（按流程出现顺序）',
+    'Main technologies (in build order appearance order)': '主要科技（按流程出现顺序）',
+    'Start game, close': '开始游戏，关闭',
+    'Civilization': '文明',
+    'Source': '来源',
+    'No highlights found for this build order.': '未在该流程中识别到重点兵种或科技。',
+    'HIGHLIGHTS_TIP': '建议进游戏前把流程说明浏览一遍，记住本页的重点科技与兵种；游戏内用悬浮窗按钮或全局快捷键逐步推进。',
     'HOW_TO_USE_TEXT':
         '使用说明：\n\n'
         '1. 导入建造顺序（"导入"标签页：从剪贴板导入，可先填流程名称）。\n'

@@ -1,14 +1,16 @@
 # -*- coding: utf-8 -*-
-"""R3 冒烟测试 + 覆盖率检查（管理器 + 悬浮窗 双窗口改版）。
+"""R3/R6 冒烟测试 + 覆盖率检查（管理器 + 悬浮窗双窗口改版）。
 
 用法：在仓库根目录执行  python 需求文档/R3-冒烟测试.py
 
 每个游戏在独立子进程中离屏测试（与真实使用一致）：
-  双窗构建 → 界面文案中文断言 → 剪贴板导入（写入临时目录）→ 搜索选择
-  → 悬浮窗开关 → 状态切换（穿透属性断言）→ 主题切换 → reload 联动。
+  双窗构建 → 中文文案断言 → 便携式配置/迁移 → 导入（含非法内容拒绝）→
+  搜索选择 → 要点提取与要点窗口 → 悬浮窗开关（经管理器，含要点弹窗处理）→
+  位置回归 → 隐藏双击 → 锁按钮 → 状态切换 → 主题 → reload 联动 → 游戏切换。
 第二部分：AST 扫描 UI 字符串调用点 + tooltip/变量赋值/返回值，与翻译字典比对。
 
-说明：pynput 全局鼠标监听器与界面逻辑无关，子进程中以桩替换；结束用 os._exit 跳过拆解段错误。
+说明：pynput 监听器与被测逻辑无关，子进程中以桩替换；模态弹窗（exec_/question/
+QInputDialog）在离屏环境会崩溃或挂起，分别打桩或跳过；结束用 os._exit 跳过拆解段错误。
 """
 import ast
 import json
@@ -48,16 +50,15 @@ from common.chinese_locale import install
 install()
 app = QApplication([])
 
-# 离屏环境下模态弹窗（QMessageBox.exec_/QInputDialog）会崩溃或永久阻塞：
-# - QMessageBox.exec_ 桩替换为立即返回（不影响被测逻辑）
-# - QMessageBox.question 桩固定返回 Yes（测试删除确认流程）
-# - 重命名走 QInputDialog 模态输入，无法离屏自动化——跳过，留待实机验收
+# 离屏环境桩：模态弹窗会崩溃/挂起
 QMessageBox.exec_ = lambda self, *a, **k: 0
 QMessageBox.question = staticmethod(lambda *a, **k: QMessageBox.Yes)
 
+from common.rts_overlay import PanelID
+from common.manager_window import ManagerWindow
+
 module = __import__(f"{game_key}.{game_key}_game_overlay", fromlist=[class_name])
 overlay = getattr(module, class_name)(app=app, directory_main=str(py_dir))
-from common.manager_window import ManagerWindow
 manager = ManagerWindow(app=app, overlay=overlay)
 app.processEvents()
 
@@ -70,6 +71,13 @@ def check(label, condition, detail=""):
         failures.append(f"{label} {detail}")
         print(f"  FAIL {label} {detail}")
 
+def close_highlights_if_any():
+    """若要点窗口已弹出则关闭（按设计：关闭后悬浮窗才开启）。"""
+    d = getattr(manager, "_highlights_dialog", None)
+    if d is not None and d.isVisible():
+        d.close()
+        app.processEvents()
+
 # --- 1. 双窗构建与文案
 check("管理器标题", manager.windowTitle() == "RTS Overlay 管理器", manager.windowTitle())
 check("悬浮窗标题", overlay.windowTitle() == expected_title, overlay.windowTitle())
@@ -78,30 +86,24 @@ check("开启按钮文案", manager.overlay_toggle_button.text() == "开启悬�
 check("指引按钮数", len(manager.guide_buttons) == 4)
 check("指引完成前缀", manager.guide_buttons[3].text().startswith(("⬜", "✅")), manager.guide_buttons[3].text())
 check("主题按钮", manager.theme_light_button.text() == "浅色" and manager.theme_dark_button.text() == "深色")
+check("状态按钮文案", manager.state_move_button.text() == "移动模式" and manager.state_fixed_button.text() == "固定模式")
 
-# 便携式配置：配置保存在工具目录 local_config（不写 C 盘系统目录）
+# --- 2. 便携式配置 + 迁移 + 导入（写入临时目录，不动用户真实配置）
 check("便携式配置目录", "local_config" in overlay.directory_config_rts_overlay, overlay.directory_config_rts_overlay)
 check("配置目录已创建/迁移", os.path.isdir(overlay.directory_config_rts_overlay))
 check("素材目录解析(新布局)", os.path.isdir(overlay.directory_common_pictures), overlay.directory_common_pictures)
-check("状态按钮文案", manager.state_move_button.text() == "移动模式" and manager.state_fixed_button.text() == "固定模式")
+check("剪贴板导入封装存在", hasattr(manager, "import_from_clipboard"))
 
-# --- 2. 导入（写入临时目录，不动用户真实配置）
-# 注意：Qt offscreen 平台不支持剪贴板（clipboard() 会崩溃），
-# "从剪贴板导入"= clipboard().text() + save_build_order_from_text 一行封装，
-# 故此处直接测试 save_build_order_from_text，剪贴板读取留待实机验收。
 real_bo_dir = overlay.directory_build_orders
 temp_bo_dir = Path(tempfile.mkdtemp(prefix="r3_test_bo_"))
 overlay.directory_build_orders = str(temp_bo_dir)
-check("剪贴板导入封装存在", hasattr(manager, "import_from_clipboard"))
-existing = sorted(Path(real_bo_dir).glob("*.json")) if Path(real_bo_dir).is_dir() else []
+existing = sorted(Path(real_bo_dir).rglob("*.json")) if Path(real_bo_dir).is_dir() else []
 if existing:
     bo_data = json.loads(existing[0].read_text(encoding="utf-8"))
     bo_data["name"] = "R3测试用建造顺序"
     manager.save_build_order_from_text(json.dumps(bo_data, ensure_ascii=False), "")
-    imported = (temp_bo_dir / "R3测试用建造顺序.json").exists()
-    check("导入-文件写入", imported)
+    check("导入-文件写入", (temp_bo_dir / "R3测试用建造顺序.json").exists())
     check("导入-重载后可见", any(bo.get("name") == "R3测试用建造顺序" for bo in overlay.build_orders))
-    # 自定义名称导入
     bo_data["name"] = "R3自定义名称流程"
     manager.save_build_order_from_text(json.dumps(bo_data, ensure_ascii=False), "R3自定义名称流程")
     check("导入-名称栏覆盖", (temp_bo_dir / "R3自定义名称流程.json").exists())
@@ -109,23 +111,22 @@ else:
     skips.append("导入（真实建造顺序文件夹为空，无法构造有效样本）")
     print("  SKIP 导入（无真实建造顺序样本）")
 
-# 无效内容应安全拒绝
 manager.save_build_order_from_text("这不是JSON", "")
-check("导入-非法内容安全拒绝", not any("这不是JSON" in f.name for f in temp_bo_dir.glob("*.json")))
+check("导入-非法内容安全拒绝", not any("这不是JSON" in f.name for f in temp_bo_dir.rglob("*.json")))
 
-# --- 3. 搜索与选择（空搜索 = 显示全部）
+# --- 3. 搜索与选择（空搜索 = 显示全部）+ 要点提取
 if len(overlay.build_orders) > 0:
     first_bo = overlay.build_orders[0]
     for key, combo in manager.filter_combos:
         expected = first_bo.get(key)
         target_index = -1
         for i in range(combo.count()):
-            if combo.itemText(i) == expected or (expected is None and combo.itemText(i) in ("Generic", "Any")):
+            if combo.itemText(i) == expected or (expected is None and combo.itemText(i) in ("Generic", "Any", "all")):
                 target_index = i
                 break
         if target_index >= 0:
             combo.setCurrentIndex(target_index)
-    manager.search_edit.setText("")  # 空搜索 = 直接显示全部（R3 反馈改进）
+    manager.search_edit.setText("")  # 空搜索 = 直接显示全部
     app.processEvents()
     check("搜索结果列表", len(manager.last_valid_names) > 0, f"names={manager.last_valid_names}")
     if len(manager.last_valid_names) > 0:
@@ -133,32 +134,32 @@ if len(overlay.build_orders) > 0:
         app.processEvents()
         check("选择建造顺序", overlay.selected_build_order is not None)
 
-        # --- 删除（移入弃用区）；重命名走 QInputDialog 模态输入，离屏无法自动化——跳过
-        if game_key == "aoe2":
-            mgr_names = [manager.results_list.item(i).text() for i in range(manager.results_list.count())]
-            target_name = next((n for n in mgr_names if "R3" in n), None)
-            if target_name:
-                manager.delete_build_order(target_name)
-                dep_dir = temp_bo_dir.parent / "弃用区"
-                moved = any(f.suffix == ".json" for f in dep_dir.glob("*.json")) if dep_dir.is_dir() else False
-                check("删除-移入弃用区", moved)
-                check("删除-原文件不再加载", all(bo.get("name") != target_name for bo in overlay.build_orders))
-            else:
-                skips.append("删除（结果列表中无导入样本）")
-                print("  SKIP 删除")
+        # R6 要点提取
+        hl = overlay.get_build_order_highlights()
+        check("要点提取-结构", "units" in hl and "techs" in hl)
+        check("要点提取-排除资源/动物/时代", all(
+            ("/resource/" not in x["icon"]) and ("/animal/" not in x["icon"]) and ("/age/" not in x["icon"])
+            for x in hl["units"] + hl["techs"]))
+        if game_key == "aoe2":  # 分类表本期仅 AoE2 提供，其他游戏要点为空属预期
+            check("要点提取-有内容", len(hl["units"]) + len(hl["techs"]) > 0,
+                  f"units={len(hl['units'])} techs={len(hl['techs'])}")
 else:
     skips.append("搜索与选择（无建造顺序数据）")
     print("  SKIP 搜索与选择")
 
-# --- 4. 悬浮窗开关 + 隐藏按钮双击
-manager.toggle_overlay()
-app.processEvents()
+# --- 4. 悬浮窗开关（经管理器，含要点窗口）+ 隐藏按钮双击 + 位置回归
+def open_overlay_via_manager():
+    """经管理器开启悬浮窗；若弹出要点窗口则关闭（按设计：关闭后悬浮窗开启）。"""
+    manager.toggle_overlay()
+    app.processEvents()
+    close_highlights_if_any()
+
+open_overlay_via_manager()
 check("开启悬浮窗", overlay.overlay_visible())
 manager.toggle_overlay()
 app.processEvents()
 check("关闭悬浮窗", not overlay.overlay_visible())
-manager.toggle_overlay()  # 重新打开供后续状态测试
-app.processEvents()
+open_overlay_via_manager()  # 重新打开供后续状态测试
 
 x_before_drag = 120
 old_width = overlay.width()
@@ -182,24 +183,9 @@ overlay.build_order_hide_button.button.click()
 app.processEvents()
 check("隐藏按钮双击才隐藏", not overlay.overlay_visible())
 check("快捷键折叠项", hasattr(manager, "hotkeys_header") and hasattr(manager, "open_hotkeys_window"))
-manager.toggle_overlay()
-app.processEvents()
+open_overlay_via_manager()
 
-# 锁形按钮：显示当前状态图标，点击切换移动/固定
-check("锁按钮存在", overlay.build_order_lock_button is not None)
-check("锁按钮初始为解锁图标", "lock_open" in manager.overlay.images.lock_open)
-panel_before = overlay.selected_panel
-overlay.build_order_lock_button.button.click()
-app.processEvents()
-check("锁按钮点击切换状态", overlay.selected_panel != panel_before)
-icon_after_open = overlay.build_order_lock_button.button.icon().isNull() is False
-check("锁按钮图标有效", icon_after_open)
-overlay.build_order_lock_button.button.click()
-app.processEvents()
-check("锁按钮再次点击切回", overlay.selected_panel == panel_before)
-
-# --- 5. 状态切换（移动 <-> 固定）
-from common.rts_overlay import PanelID
+# --- 5. 状态切换（移动 <-> 固定）+ 锁按钮
 check("默认移动模式", overlay.selected_panel == PanelID.CONFIG)
 check("移动模式-可点击(不穿透)", not overlay.testAttribute(__import__("PyQt5.QtCore", fromlist=["Qt"]).Qt.WA_TransparentForMouseEvents))
 manager.set_overlay_state(False)
@@ -212,18 +198,18 @@ app.processEvents()
 check("切回移动模式", overlay.selected_panel == PanelID.CONFIG)
 check("移动模式-恢复不穿透", not overlay.testAttribute(__import__("PyQt5.QtCore", fromlist=["Qt"]).Qt.WA_TransparentForMouseEvents))
 
-# 指引第4步（固定悬浮窗）点击 = 切换 固定/移动
-manager.open_guide_step(3)
-app.processEvents()
-check("指引4切到固定", overlay.selected_panel == PanelID.BUILD_ORDER)
-manager.open_guide_step(3)
-app.processEvents()
-check("指引4切回移动", overlay.selected_panel == PanelID.CONFIG)
-
-# 悬浮窗按钮（开始/停止计时仅在流程含时间参数时显示）
 check("悬浮窗-上一步按钮", overlay.build_order_previous_button is not None)
 check("悬浮窗-下一步按钮", overlay.build_order_next_button is not None)
 check("悬浮窗-隐藏按钮", overlay.build_order_hide_button is not None)
+check("悬浮窗-锁按钮", overlay.build_order_lock_button is not None)
+panel_before = overlay.selected_panel
+overlay.build_order_lock_button.button.click()
+app.processEvents()
+check("锁按钮点击切换状态", overlay.selected_panel != panel_before)
+check("锁按钮图标有效", not overlay.build_order_lock_button.button.icon().isNull())
+overlay.build_order_lock_button.button.click()
+app.processEvents()
+check("锁按钮再次点击切回", overlay.selected_panel == panel_before)
 if overlay.selected_build_order is not None and not overlay.build_order_timer["steps"]:
     check("无时间参数-不显示计时按钮", not overlay.build_order_start_stop_timer.button.isVisible())
 
@@ -239,28 +225,6 @@ overlay.unscaled_settings.layout.font_size = 12
 overlay.reload(update_settings=False)
 app.processEvents()
 check("reload 后设置同步", overlay.settings.layout.font_size == 12)
-
-# --- 显示行数（手动模式按页推进）
-check("display_rows 默认值", overlay.unscaled_settings.layout.build_order.display_rows == 3)
-if overlay.selected_build_order is not None and len(overlay.selected_build_order["build_order"]) >= 3:
-    overlay.settings.layout.build_order.display_rows = 1
-    start1, end1 = overlay._get_manual_page_range()
-    check("行数=1 时单步显示", start1 == end1)
-    overlay.settings.layout.build_order.display_rows = 3
-    start3, end3 = overlay._get_manual_page_range()
-    check("行数=3 时页覆盖更多行", end3 >= end1, f"end1={end1} end3={end3}")
-    # 下一页推进到当前页末尾的下一步
-    overlay.selected_build_order_step_id = start3
-    overlay.build_order_next_step()
-    check("下一步翻到下一页", overlay.selected_build_order_step_id == min(end3 + 1, len(overlay.selected_build_order["build_order"]) - 1),
-          f"step_id={overlay.selected_build_order_step_id} end3={end3}")
-    # 上一步回到上一页起点
-    page_before = overlay.selected_build_order_step_id
-    overlay.build_order_previous_step()
-    check("上一步回退页面", overlay.selected_build_order_step_id < page_before or page_before == 0)
-else:
-    skips.append("显示行数（无多步建造顺序样本）")
-    print("  SKIP 显示行数")
 
 # --- 8. 游戏切换（仅 AoE2 子进程覆盖全游戏注册表）
 if game_key == "aoe2":

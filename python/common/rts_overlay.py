@@ -1,5 +1,6 @@
 import os
 import json
+import re
 import shutil
 import time
 import appdirs
@@ -33,6 +34,13 @@ from common.useful_tools import (
 )
 from common.keyboard_mouse import KeyboardMouseManagement
 from common.rts_settings import KeyboardMouse
+
+
+# icon folders used by the highlights fallback classification (AoE2 layout; daughter
+# classes replace these through 'icon_unit_folders' etc. if their layout differs)
+ICON_UNIT_FOLDERS = {'stable', 'archery_range', 'barracks', 'siege_workshop', 'monastery', 'castle', 'dock', 'unique_unit'}
+ICON_TECH_FOLDERS = {'blacksmith', 'mill', 'lumber_camp', 'mining_camp', 'town_center', 'university'}
+ICON_EXCLUDED_FOLDERS = {'resource', 'animal', 'age', 'other', 'civilization', 'defensive_structures', 'hero'}
 
 
 # ID of the overlay state (the manager window switches between the two)
@@ -182,6 +190,12 @@ class RTSGameOverlay(QMainWindow):
 
         # faction filter specifications for the manager window (daughter classes may set this)
         self.faction_filter_specs = []
+
+        # icon classification for the highlights window (daughter classes may set this)
+        self.icon_classification = {}
+        self.icon_unit_folders = set(ICON_UNIT_FOLDERS)
+        self.icon_tech_folders = set(ICON_TECH_FOLDERS)
+        self.icon_excluded_folders = set(ICON_EXCLUDED_FOLDERS)
 
         # manager callback to notify overlay state changes
         self.mode_callback = None
@@ -572,6 +586,62 @@ class RTSGameOverlay(QMainWindow):
         panel_hotkeys.button_margin = scale_int(scaling, unscaled_panel_hotkeys.button_margin)
         panel_hotkeys.vertical_spacing = scale_int(scaling, unscaled_panel_hotkeys.vertical_spacing)
         panel_hotkeys.horizontal_spacing = scale_int(scaling, unscaled_panel_hotkeys.horizontal_spacing)
+
+    def _resolve_icon_path(self, icon_ref: str):
+        """Resolve an '@folder/name.ext@' icon reference to an existing file path
+        (tries the original extension, then webp/png/jpg)."""
+        base = os.path.splitext(os.path.join(self.directory_game_pictures, icon_ref.replace('/', os.sep)))[0]
+        for candidate in (base + os.path.splitext(icon_ref)[1], base + '.webp', base + '.png', base + '.jpg'):
+            if os.path.isfile(candidate):
+                return candidate
+        return None
+
+    def get_build_order_highlights(self) -> dict:
+        """Extract the main units and technologies from the selected build order notes.
+
+        Icons are classified through 'icon_classification' (daughter classes provide the
+        per-game table); unknown icons fall back to their building folder. Villager,
+        resource, animal, age and building icons are excluded.
+
+        Returns
+        -------
+        Dictionary with 'units' and 'techs' lists of {'stem', 'name', 'icon'} in
+        first-appearance order.
+        """
+        highlights = {"units": [], "techs": []}
+        if self.selected_build_order is None or 'build_order' not in self.selected_build_order:
+            return highlights
+
+        seen = set()
+        for step in self.selected_build_order['build_order']:
+            for note in step.get('notes', []):
+                for icon in re.findall(r'@([^@]+)@', note):
+                    folder, _, fname = icon.partition('/')
+                    stem = os.path.splitext(fname)[0]
+                    if folder in self.icon_excluded_folders or stem in seen:
+                        continue
+
+                    info = self.icon_classification.get(stem)
+                    if info is not None:
+                        kind = info.get('type')
+                        name = info.get('name', stem)
+                        if kind not in ('unit', 'tech'):
+                            continue
+                    elif folder in self.icon_unit_folders:
+                        kind, name = 'unit', stem  # unknown icon: English fallback
+                    elif folder in self.icon_tech_folders:
+                        kind, name = 'tech', stem
+                    else:
+                        continue
+
+                    icon_path = self._resolve_icon_path(icon)
+                    if icon_path is None:
+                        continue
+                    seen.add(stem)
+                    highlights['units' if kind == 'unit' else 'techs'].append(
+                        {'stem': stem, 'name': name, 'icon': icon_path}
+                    )
+        return highlights
 
     def get_filter_specs(self):
         """Get the faction filter specifications for the manager window.

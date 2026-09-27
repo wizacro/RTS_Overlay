@@ -9,6 +9,7 @@ from PyQt5.QtWidgets import (
     QApplication,
     QColorDialog,
     QComboBox,
+    QDialog,
     QFrame,
     QHBoxLayout,
     QInputDialog,
@@ -26,7 +27,7 @@ from PyQt5.QtWidgets import (
     QWidget,
 )
 from PyQt5.QtCore import Qt, QTimer
-from PyQt5.QtGui import QIcon
+from PyQt5.QtGui import QIcon, QPixmap
 
 from common.chinese_locale import t  # Chinese UI layer
 from common.rts_overlay import PanelID
@@ -364,10 +365,16 @@ class ManagerWindow(QMainWindow):
         layout = QVBoxLayout(tab)
         pictures = self.overlay.directory_common_pictures
 
-        # --- reminder at the top (large and bold)
+        # --- reminder at the top (large and bold) + highlights button
+        rem_row = QHBoxLayout()
         select_label = QLabel(t('Select a build order'))
         select_label.setObjectName('selectHint')
-        layout.addWidget(select_label)
+        rem_row.addWidget(select_label)
+        rem_row.addStretch()
+        highlights_button = QPushButton(t('Build order highlights'))
+        highlights_button.clicked.connect(lambda: self.show_highlights_window(False))
+        rem_row.addWidget(highlights_button)
+        layout.addLayout(rem_row)
 
         # --- selection (filter combos are inserted by 'refresh_filter_combos')
         selection_row = QHBoxLayout()
@@ -747,13 +754,88 @@ class ManagerWindow(QMainWindow):
     # --------------------------------------------------- overlay controls
 
     def toggle_overlay(self):
-        """Show/hide the overlay window."""
+        """Show/hide the overlay window (highlights window shown first when a build order is selected)."""
         if self.overlay.overlay_visible():
             self.overlay.close_overlay()
+        elif self.overlay.selected_build_order is not None:
+            self.show_highlights_window(start_overlay=True)
         else:
             self.overlay.open_overlay()
         self.update_overlay_controls()
         self.update_guide()
+
+    def _open_overlay_after_highlights(self):
+        """Called when the highlights window closes: open the overlay if requested."""
+        if getattr(self, '_highlights_start_overlay', False):
+            self._highlights_start_overlay = False
+            self.overlay.open_overlay()
+        self.update_overlay_controls()
+        self.update_guide()
+
+    def show_highlights_window(self, start_overlay: bool = False):
+        """Show the build order highlights window (units and technologies)."""
+        bo = self.overlay.selected_build_order
+        if bo is None or 'build_order' not in bo:
+            if start_overlay:
+                self.toggle_overlay()
+            return
+
+        highlights = self.overlay.get_build_order_highlights()
+        dialog = QDialog(self)
+        dialog.setWindowTitle(f"{t('Build order highlights')}：{self.overlay.selected_build_order_name or ''}")
+        layout = QVBoxLayout(dialog)
+
+        headline = QLabel(self.overlay.selected_build_order_name or '')
+        headline.setObjectName('highlightsHeadline')
+        layout.addWidget(headline)
+
+        source = (bo.get('source') or '').replace('https://', '').replace('http://', '')
+        layout.addWidget(QLabel(f"{t('Civilization')}：<b>{bo.get('civilization', '—')}</b>　｜　{t('Step')}：{len(bo['build_order'])}　｜　{t('Source')}：{source}"))
+
+        def add_items(container, items):
+            row = QHBoxLayout()
+            for item in items:
+                box = QVBoxLayout()
+                icon_label = QLabel()
+                icon_label.setPixmap(QPixmap(item['icon']).scaled(
+                    44, 44, Qt.KeepAspectRatio, Qt.SmoothTransformation))
+                icon_label.setAlignment(Qt.AlignCenter)
+                box.addWidget(icon_label)
+                name_label = QLabel(item['name'])
+                name_label.setAlignment(Qt.AlignCenter)
+                name_label.setWordWrap(True)
+                box.addWidget(name_label)
+                container.addLayout(box)
+
+        if highlights['units']:
+            layout.addWidget(QLabel(t('Main units (in build order appearance order)')))
+            row = QHBoxLayout()
+            add_items(row, highlights['units'])
+            layout.addLayout(row)
+        if highlights['techs']:
+            layout.addWidget(QLabel(t('Main technologies (in build order appearance order)')))
+            row = QHBoxLayout()
+            add_items(row, highlights['techs'])
+            layout.addLayout(row)
+        if not highlights['units'] and not highlights['techs']:
+            layout.addWidget(QLabel(t('No highlights found for this build order.')))
+
+        tip = QLabel(t('HIGHLIGHTS_TIP'))
+        tip.setWordWrap(True)
+        layout.addWidget(tip)
+
+        buttons = QHBoxLayout()
+        buttons.addStretch()
+        close_button = QPushButton(t('Start game, close'))
+        close_button.setObjectName('primaryBtn')
+        close_button.clicked.connect(dialog.accept)
+        buttons.addWidget(close_button)
+        layout.addLayout(buttons)
+
+        self._highlights_start_overlay = start_overlay
+        dialog.finished.connect(self._open_overlay_after_highlights)
+        self._highlights_dialog = dialog
+        dialog.show()
 
     def set_overlay_state(self, arrange: bool):
         """Switch the overlay state (arrange pre-game / in-game)."""
