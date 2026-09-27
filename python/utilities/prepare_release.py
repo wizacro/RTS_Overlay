@@ -22,7 +22,6 @@ def compile_clean(name_game: str, disable_console: bool = True, finalize_folder:
 
     assert not os.path.isdir(name_out_lib)
     os.mkdir(name_out_lib)
-    os.mkdir(overlay_folder)
     os.mkdir(utilities_folder)
 
     icon = '../../docs/assets/common/icon/salamander_sword_shield.ico'  # icon for the library
