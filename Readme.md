@@ -184,6 +184,8 @@ RTS Overlay 不会与游戏本身交互（不分析屏幕画面，也不进行�
 
 每次运行程序前需要重新执行第 3 步的进入目录与第 4 步的激活环境（激活后第 5 步只需一次）。
 
+流程与设置保存在 `python/local_config` 文件夹内（便携式，不写入系统目录），首次运行会自动迁移旧版本在系统 AppData 的配置（原数据保留）。
+
 ## 网页版（原项目逻辑，未汉化）
 
 网页版保持原项目逻辑，可直接在浏览器使用：访问 [rts-overlay.github.io](https://rts-overlay.github.io/) 并按页面说明操作。
@@ -198,7 +200,9 @@ RTS Overlay 不会与游戏本身交互（不分析屏幕画面，也不进行�
 
 ## EXE 版（免 Python 环境）
 
-**本中文版 EXE**：从本仓库的 [Releases](https://github.com/wizacro/RTS_Overlay/releases) 页面下载 `aoe2_overlay.zip`（目前提供帝国时代2，其余游戏请使用上方"从源码运行"），解压后运行 *overlay* 文件夹中的 `aoe2_overlay.exe`，即开即用、无需安装 Python。
+**本中文版 EXE**：从本仓库的 [Releases](https://github.com/wizacro/RTS_Overlay/releases) 页面下载 `aoe2_overlay.zip`（目前提供帝国时代2，其余游戏请使用上方"从源码运行"），解压后**双击根目录的 `aoe2_overlay.exe`** 即开即用、无需安装 Python。
+
+流程与设置保存在工具目录的 `local_config` 文件夹内（便携式，不写入系统目录），整个文件夹拷走即可带走全部数据；首次运行会自动把旧版本存放在系统 AppData 的配置迁移过来（原数据保留）。
 
 原项目也提供预编译 EXE（[原项目发布页](https://github.com/CraftySalamander/RTS_Overlay/releases)，含其他游戏），注意那是**旧版单窗口界面**（英文），不含本中文版的管理器界面。
 
@@ -207,7 +211,7 @@ RTS Overlay 不会与游戏本身交互（不分析屏幕画面，也不进行�
 * **网页版问题**：换一个浏览器（Chrome、Edge）试试；就本悬浮窗而言，Edge 和 Chrome 通常比 Firefox 表现更好。
 * **EXE 版**（原项目 EXE）：若提示 "cannot proceed because python38.dll was not found"，请在解压前解除 zip 压缩包的锁定（右键 → 属性 → 勾选"解除锁定"）；Windows 或杀毒软件可能将 *.exe* 识别为威胁，需添加 Defender 例外规则。
 * **源码版（本中文版）**：
-    * 悬浮窗已启动但看不到：可能是位置在屏幕外，检查设置文件（*C:\Users\你的用户名\AppData\Local\RTS_Overlay\对应游戏\settings\*）中的位置参数；或先在管理器关闭再重新开启悬浮窗。
+    * 悬浮窗已启动但看不到：可能是位置在屏幕外，检查工具目录下 `local_config\对应游戏\settings\` 中的设置文件；或先在管理器关闭再重新开启悬浮窗。
     * 全局快捷键失效：确认使用了 Python 3.8 环境（新版 Python 与 pynput 不兼容）。
 * **首次运行 EXE 提示"Windows 已保护你的电脑"**：这是 SmartScreen 对无数字签名程序的常规拦截（原项目 EXE 同样如此，并非报毒）。点击"更多信息"→"仍要运行"即可，只会拦截第一次；或解压前先右键 zip → 属性 → 勾选"解除锁定"。
     * 更多问题可在 [原项目 Issues](https://github.com/CraftySalamander/RTS_Overlay/issues) 提交（英文），或在本 fork 的 Issues 提交（中文）。

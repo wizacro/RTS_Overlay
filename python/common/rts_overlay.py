@@ -1,5 +1,6 @@
 import os
 import json
+import shutil
 import time
 import appdirs
 from math import floor
@@ -93,17 +94,25 @@ class RTSGameOverlay(QMainWindow):
         # directories
         self.name_game = name_game
         self.directory_main = directory_main  # main file
-        self.directory_game_pictures = os.path.join(
-            self.directory_main, '..', 'docs', 'assets', name_game
-        )  # game pictures
-        self.directory_common_pictures = os.path.join(
-            self.directory_main, '..', 'docs', 'assets', 'common'
-        )  # common pictures
-        # common configuration
-        if os.path.isdir(os.path.join(self.directory_main, 'local_config')):  # check for local configuration folder
-            self.directory_config_rts_overlay = os.path.join(self.directory_main, 'local_config')
-        else:
-            self.directory_config_rts_overlay = os.path.join(appdirs.user_data_dir(), 'RTS_Overlay')
+        # assets folder: next to the launcher (packaged) or one level above (source run)
+        docs_candidates = [
+            os.path.join(self.directory_main, 'docs'),  # packaged layout
+            os.path.join(self.directory_main, '..', 'docs'),  # source layout
+        ]
+        docs_dir = next((c for c in docs_candidates if os.path.isdir(c)), docs_candidates[0])
+        self.directory_game_pictures = os.path.join(docs_dir, 'assets', name_game)  # game pictures
+        self.directory_common_pictures = os.path.join(docs_dir, 'assets', 'common')  # common pictures
+        # common configuration: portable mode - kept inside the tool directory (no C: system folders)
+        self.directory_config_rts_overlay = os.path.join(self.directory_main, 'local_config')
+        if not os.path.isdir(self.directory_config_rts_overlay):
+            legacy_root = os.path.join(appdirs.user_data_dir(), 'RTS_Overlay')
+            if os.path.isdir(legacy_root):  # one-time migration: copy the old AppData configuration (original kept)
+                try:
+                    shutil.copytree(legacy_root, self.directory_config_rts_overlay)
+                    print(f'Migrated the configuration from {legacy_root} to {self.directory_config_rts_overlay}.')
+                except Exception as e:
+                    print(f'Could not migrate the old configuration ({e}); using it in place instead.')
+                    self.directory_config_rts_overlay = legacy_root
         self.directory_config_game = os.path.join(self.directory_config_rts_overlay, name_game)  # game configuration
         self.directory_settings = os.path.join(self.directory_config_game, 'settings')  # settings file
         self.directory_build_orders = os.path.join(self.directory_config_game, 'build_orders')  # build orders

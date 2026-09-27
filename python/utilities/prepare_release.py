@@ -16,9 +16,9 @@ def compile_clean(name_game: str, disable_console: bool = True, finalize_folder:
     name_main_file = 'main_' + name_game  # name of the main python file (without path & extension)
     name_out_lib = name_game + '_overlay'  # name of the output library
 
-    # create output folders
-    overlay_folder = os.path.join(name_out_lib, 'overlay')
-    utilities_folder = os.path.join(overlay_folder, 'utilities')
+    # create output folders (exe at the tool root, for easy access)
+    overlay_folder = name_out_lib
+    utilities_folder = os.path.join(name_out_lib, 'utilities')
 
     assert not os.path.isdir(name_out_lib)
     os.mkdir(name_out_lib)
@@ -62,11 +62,6 @@ def compile_clean(name_game: str, disable_console: bool = True, finalize_folder:
 
     # copy files in output directory
     shutil.copytree(f'{name_main_file}.dist', overlay_folder, dirs_exist_ok=True)
-
-    # move pictures in new directory
-    out_docs = os.path.join(name_out_lib, 'docs')
-    os.makedirs(out_docs, exist_ok=True)
-    shutil.move(os.path.join(overlay_folder, 'docs', 'assets'), out_docs)
 
     # clean building files
     shutil.rmtree(f'{name_main_file}.build')
