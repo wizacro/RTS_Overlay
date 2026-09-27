@@ -1,1 +1,4 @@
 弃用区/
+__pycache__/
+*.pyc
+python/utilities/*.zip
