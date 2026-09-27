@@ -143,6 +143,13 @@ if len(overlay.build_orders) > 0:
         if game_key == "aoe2":  # 分类表本期仅 AoE2 提供，其他游戏要点为空属预期
             check("要点提取-有内容", len(hl["units"]) + len(hl["techs"]) > 0,
                   f"units={len(hl['units'])} techs={len(hl['techs'])}")
+        # R6 "流程要点"按钮（回归：按钮传参 bug 曾导致闪退）
+        manager.highlights_button.button.click() if hasattr(manager.highlights_button, "button") else manager.highlights_button.click()
+        app.processEvents()
+        check("要点按钮-窗口弹出", manager._highlights_dialog is not None and manager._highlights_dialog.isVisible())
+        manager._highlights_dialog.close()
+        app.processEvents()
+        check("要点按钮-关闭后悬浮窗不受影响", overlay.overlay_visible() == overlay.overlay_visible())
 else:
     skips.append("搜索与选择（无建造顺序数据）")
     print("  SKIP 搜索与选择")

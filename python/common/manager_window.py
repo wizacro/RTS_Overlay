@@ -353,9 +353,9 @@ class ManagerWindow(QMainWindow):
         select_label.setObjectName('selectHint')
         rem_row.addWidget(select_label)
         rem_row.addStretch()
-        highlights_button = QPushButton(t('Build order highlights'))
-        highlights_button.clicked.connect(lambda: self.show_highlights_window(False))
-        rem_row.addWidget(highlights_button)
+        self.highlights_button = QPushButton(t('Build order highlights'))
+        self.highlights_button.clicked.connect(lambda checked=False: self.show_highlights_window())
+        rem_row.addWidget(self.highlights_button)
         layout.addLayout(rem_row)
 
         # --- selection (filter combos are inserted by 'refresh_filter_combos')
