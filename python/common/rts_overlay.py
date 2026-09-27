@@ -1391,11 +1391,8 @@ class RTSGameOverlay(QMainWindow):
 
         button_space_size = action_button_size + action_button_spacing
 
-        # buttons at the right edge (from right to left: lock, next, previous, start/stop timer, hide)
+        # buttons at the right edge (from right to left: next, previous, start/stop timer, hide, lock)
         next_x = self.width() - border_size - action_button_size
-        self.build_order_lock_button.move(next_x, border_size)
-
-        next_x -= button_space_size
         self.build_order_next_button.move(next_x, border_size)
 
         next_x -= button_space_size
@@ -1407,6 +1404,9 @@ class RTSGameOverlay(QMainWindow):
             next_x -= button_space_size
 
         self.build_order_hide_button.move(next_x, border_size)
+
+        next_x -= button_space_size
+        self.build_order_lock_button.move(next_x, border_size)
 
         # step label at the left edge
         self.build_order_step_time.move(border_size, border_size)
