@@ -78,6 +78,11 @@ check("开启按钮文案", manager.overlay_toggle_button.text() == "开启悬�
 check("指引按钮数", len(manager.guide_buttons) == 4)
 check("指引完成前缀", manager.guide_buttons[3].text().startswith(("⬜", "✅")), manager.guide_buttons[3].text())
 check("主题按钮", manager.theme_light_button.text() == "浅色" and manager.theme_dark_button.text() == "深色")
+
+# 便携式配置：配置保存在工具目录 local_config（不写 C 盘系统目录）
+check("便携式配置目录", "local_config" in overlay.directory_config_rts_overlay, overlay.directory_config_rts_overlay)
+check("配置目录已创建/迁移", os.path.isdir(overlay.directory_config_rts_overlay))
+check("素材目录解析(新布局)", os.path.isdir(overlay.directory_common_pictures), overlay.directory_common_pictures)
 check("状态按钮文案", manager.state_move_button.text() == "移动模式" and manager.state_fixed_button.text() == "固定模式")
 
 # --- 2. 导入（写入临时目录，不动用户真实配置）
