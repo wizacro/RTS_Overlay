@@ -79,6 +79,15 @@ def compile_clean(name_game: str, disable_console: bool = True, finalize_folder:
         shutil.copy(f'../{name_main_file}.py', overlay_folder)
         shutil.copy('prepare_release.py', utilities_folder)
 
+        # seed the shipped default build orders into the portable config
+        default_bo_dir = os.path.join('..', '..', 'default_build_orders', name_game)
+        if os.path.isdir(default_bo_dir):
+            bo_target = os.path.join(name_out_lib, 'local_config', name_game, 'build_orders')
+            os.makedirs(bo_target, exist_ok=True)
+            for bo_file in os.listdir(default_bo_dir):
+                if bo_file.endswith('.json'):
+                    shutil.copy(os.path.join(default_bo_dir, bo_file), bo_target)
+
         # zip output folder
         shutil.make_archive(name_out_lib, 'zip', name_out_lib)
         shutil.rmtree(name_out_lib)  # clean non-zipped files

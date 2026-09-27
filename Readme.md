@@ -201,7 +201,7 @@ RTS Overlay 不会与游戏本身交互（不分析屏幕画面，也不进行�
 
 ## EXE 版（免 Python 环境）
 
-**本中文版 EXE**：从本仓库的 [Releases](https://github.com/wizacro/RTS_Overlay/releases) 页面下载 `aoe2_overlay.zip`（目前提供帝国时代2，其余游戏请使用上方"从源码运行"），解压后**双击根目录的 `aoe2_overlay.exe`** 即开即用、无需安装 Python。
+**本中文版 EXE**：从本仓库的 [Releases](https://github.com/wizacro/RTS_Overlay/releases) 页面下载 `aoe2_overlay.zip`（目前提供帝国时代2，其余游戏请使用上方"从源码运行"），解压后**双击根目录的 `aoe2_overlay.exe`** 即开即用、无需安装 Python。内置"新手全流程（不拉野）"示例流程，首次启动自动启用。
 
 流程与设置保存在工具目录的 `local_config` 文件夹内（便携式，不写入系统目录），整个文件夹拷走即可带走全部数据；首次运行会自动把旧版本存放在系统 AppData 的配置迁移过来（原数据保留）。
 

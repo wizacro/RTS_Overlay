@@ -1,0 +1,236 @@
+{
+    "name": "新手全流程（不拉野）",
+    "civilization": "Generic",
+    "author": "vvvC",
+    "description": "一个通用的新手全流程，用于初次上手游戏，这个指南无拉野步骤，但最好后续去自己学",
+    "source": "https://space.bilibili.com/21023962",
+    "build_order": [
+        {
+            "age": 1,
+            "villager_count": 3,
+            "resources": {
+                "wood": 0,
+                "food": 3,
+                "gold": 0,
+                "stone": 0,
+                "builder": 3
+            },
+            "notes": [
+                "2个@resource/villager.webp@ 建造 @other/House_aoe2DE.webp@，1个 @resource/villager.webp@造第二个 @other/House_aoe2DE.webp@",
+                "@town_center/Towncenter_aoe2DE.webp@ 持续生产 @resource/villager.webp@",
+                "@stable/Scoutcavalry_aoe2DE.webp@ 探图找 @animal/Sheep_aoe2DE.webp@，找到就让羊回家"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 6,
+            "resources": {
+                "wood": 0,
+                "food": 6,
+                "gold": 0,
+                "stone": 0
+            },
+            "notes": [
+                "3个 @resource/villager.webp@ 开始吃 @animal/Sheep_aoe2DE.webp@",
+                "累计6个 @resource/villager.webp@ 吃 @animal/Sheep_aoe2DE.webp@，一次一只"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 10,
+            "resources": {
+                "wood": 4,
+                "food": 6,
+                "gold": 0,
+                "stone": 0
+            },
+            "notes": [
+                "后续3个新 @resource/MaleVillDE.webp@ 在城镇中心附近伐木 @resource/tree.webp@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 12,
+            "resources": {
+                "wood": 4,
+                "food": 6,
+                "gold": 0,
+                "stone": 0,
+                "builder": 2
+            },
+            "notes": [
+                "1个新 @resource/MaleVillDE.webp@ 在树林 @resource/tree.webp@ 附近造 @lumber_camp/Lumber_camp_aoe2de.webp@",
+                "1个新 @resource/MaleVillDE.webp@ 在 @resource/BerryBushDE.webp@ 附近造 @mill/Mill_aoe2de.webp@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 12,
+            "resources": {
+                "wood": 5,
+                "food": 7,
+                "gold": 0,
+                "stone": 0,
+                "builder": 0
+            },
+            "notes": [
+                "伐木 @resource/MaleVillDE.webp@ 都去 @lumber_camp/Lumber_camp_aoe2de.webp@ 附近砍",
+                "羊吃完后，吃羊 @resource/villager.webp@ 去采果 @resource/BerryBushDE.webp@，新农民也去"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 16,
+            "resources": {
+                "wood": 5,
+                "food": 10,
+                "gold": 0,
+                "stone": 0,
+                "builder": 1
+            },
+            "notes": [
+                "累计10个 @resource/villager.webp@ 在采果 @resource/BerryBushDE.webp@",
+                "1个新 @resource/villager.webp@ 在 @resource/Aoe2de_gold.webp@ 金矿附近建造 @mining_camp/Mining_camp_aoe2de.webp@",
+                "安排新 @resource/villager.webp@ 去采矿 @resource/Aoe2de_gold.webp@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 24,
+            "resources": {
+                "wood": 10,
+                "food": 10,
+                "gold": 4,
+                "stone": 0,
+                "builder": 0
+            },
+            "notes": [
+                "累计4个 @resource/villager.webp@ 在采矿 @resource/Aoe2de_gold.webp@ 即可",
+                "5个新 @resource/villager.webp@ 去伐木 @resource/tree.webp@"
+            ]
+        },
+        {
+            "age": 1,
+            "villager_count": 24,
+            "resources": {
+                "wood": 10,
+                "food": 10,
+                "gold": 4,
+                "stone": 0,
+                "builder": 0
+            },
+            "notes": [
+                "有500 @resource/Aoe2de_food.webp@ 时去 @town_center/Towncenter_aoe2DE.webp@ 升级 @age/FeudalAgeIconDE.webp@",
+                "1个伐木工建造 @barracks/Barracks_aoe2DE.webp@"
+            ]
+        },
+        {
+            "age": 2,
+            "villager_count": 24,
+            "resources": {
+                "wood": 10,
+                "food": 10,
+                "gold": 4,
+                "stone": 0
+            },
+            "notes": [
+                "进入 @age/FeudalAgeIconDE.webp@ 时，在 @town_center/Towncenter_aoe2DE.webp@ 升级 @town_center/LoomDE.webp@ 和 @town_center/WheelbarrowDE.webp@",
+                "继续生产 @resource/villager.webp@，派去伐木 @resource/tree.webp@",
+                "野果吃完，所有果农种田 @mill/FarmDE.webp@"
+            ]
+        },
+        {
+            "age": 2,
+            "villager_count": 28,
+            "resources": {
+                "wood": 14,
+                "food": 10,
+                "gold": 4,
+                "stone": 0
+            },
+            "notes": [
+                "1个伐木工建造 @blacksmith/Blacksmith_aoe2de.webp@",
+                "1个伐木工建造 @stable/Stable_aoe2DE.webp@"
+            ]
+        },
+        {
+            "age": 2,
+            "villager_count": 28,
+            "resources": {
+                "wood": 14,
+                "food": 10,
+                "gold": 4,
+                "stone": 0
+            },
+            "notes": [
+                "800 @resource/Aoe2de_food.webp@，200 @resource/Aoe2de_gold.webp@后，升级 @age/CastleAgeIconDE.webp@",
+                "@mill/Mill_aoe2de.webp@ 升级 @mill/HorseCollarDE.webp@",
+                "@lumber_camp/Lumber_camp_aoe2de.webp@ 升级 @lumber_camp/DoubleBitAxe_aoe2DE.webp@"
+            ]
+        },
+        {
+            "age": 2,
+            "villager_count": 28,
+            "resources": {
+                "wood": 14,
+                "food": 10,
+                "gold": 4,
+                "stone": 0
+            },
+            "notes": [
+                "（等待升级城堡时代期间）",
+                "@stable/Stable_aoe2DE.webp@ 升级 @stable/BloodlinesDE.webp@",
+                "@blacksmith/Blacksmith_aoe2de.webp@ 升级 @blacksmith/Forging_aoe2de.webp@ 和 @blacksmith/PlateBardingArmorDE.webp@ ",
+                "造第二个 @stable/Stable_aoe2DE.webp@"
+            ]
+        },
+        {
+            "age": 3,
+            "villager_count": 28,
+            "resources": {
+                "wood": 14,
+                "food": 10,
+                "gold": 4,
+                "stone": 0,
+                "builder": 0
+            },
+            "notes": [
+                "（进入城堡时代）",
+                "@town_center/Towncenter_aoe2DE.webp@ 持续生产 @resource/villager.webp@，新农民采矿",
+                "@blacksmith/Blacksmith_aoe2de.webp@ 升 @blacksmith/IronCastingDE.webp@ 和 @blacksmith/ChainBardingDE.webp@",
+                "2个 @stable/Stable_aoe2DE.webp@ 持续生产 @stable/Knight_aoe2DE.webp@"
+            ]
+        },
+        {
+            "age": 3,
+            "villager_count": 28,
+            "resources": {
+                "wood": 14,
+                "food": 10,
+                "gold": 4,
+                "stone": 0,
+                "builder": 0
+            },
+            "notes": [
+                "10个 @stable/Knight_aoe2DE.webp@ 开始优先进攻对面 @resource/MaleVillDE_alpha.webp@ 和弓兵",
+                "在对面家附近建造 @siege_workshop/Siege_workshop_aoe2DE.webp@"
+            ]
+        },
+        {
+            "age": 3,
+            "villager_count": 36,
+            "resources": {
+                "wood": 16,
+                "food": 12,
+                "gold": 8,
+                "stone": 0,
+                "builder": 0
+            },
+            "notes": [
+                "@resource/villager.webp@ 比例基本保持 @resource/Aoe2de_wood.webp@ &gt; @resource/Aoe2de_food.webp@  &gt; @resource/Aoe2de_gold.webp@ 即可，依情况调整",
+                "@siege_workshop/Siege_workshop_aoe2DE.webp@ 生产 @siege_workshop/Battering_ram_aoe2DE.webp@ 或 @siege_workshop/Heavyscorpion_aoe2DE.webp@ 去配合攻城",
+                "剩下时间自由发挥"
+            ]
+        }
+    ]
+}
