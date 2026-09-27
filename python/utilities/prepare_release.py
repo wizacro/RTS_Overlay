@@ -32,6 +32,8 @@ def compile_clean(name_game: str, disable_console: bool = True, finalize_folder:
         'cmd /c "python -m nuitka'
         ' --standalone'
         ' --plugin-enable=pyqt5'
+        ' --assume-yes-for-downloads'
+        ' --mingw64'
         f' --windows-icon-from-ico={icon}'
         f' --include-data-file=../common/*.py=common/'
         f' --include-data-file=../{name_game}/*.py={name_game}/'

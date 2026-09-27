@@ -193,12 +193,11 @@ RTS Overlay 不会与游戏本身交互（不分析屏幕画面，也不进行�
 
 ![建造顺序设计](/readme/rts_overlay_aoe2_editor.gif)
 
-## EXE 版（原项目发布页，旧版界面）
+## EXE 版（免 Python 环境）
 
-原项目提供预编译 EXE（免 Python 环境），可从[原项目发布页](https://github.com/CraftySalamander/RTS_Overlay/releases)下载（仅支持 Windows）：
-解压后运行对应游戏的可执行文件（位于 *overlay* 子文件夹）。
+**本中文版 EXE**：从本仓库的 [Releases](https://github.com/wizacro/RTS_Overlay/releases) 页面下载 `aoe2_overlay.zip`（目前提供帝国时代2，其余游戏请使用上方"从源码运行"），解压后运行 *overlay* 文件夹中的 `aoe2_overlay.exe`，即开即用、无需安装 Python。
 
-注意：**EXE 为原项目的旧版单窗口界面**（英文），不含本中文版的管理器界面。本中文版的新界面请通过上方"从源码运行"使用。
+原项目也提供预编译 EXE（[原项目发布页](https://github.com/CraftySalamander/RTS_Overlay/releases)，含其他游戏），注意那是**旧版单窗口界面**（英文），不含本中文版的管理器界面。
 
 ## 故障排查
 
