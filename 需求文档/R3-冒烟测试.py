@@ -87,6 +87,21 @@ check("指引按钮数", len(manager.guide_buttons) == 4)
 check("指引完成前缀", manager.guide_buttons[3].text().startswith(("⬜", "✅")), manager.guide_buttons[3].text())
 check("主题按钮", manager.theme_light_button.text() == "浅色" and manager.theme_dark_button.text() == "深色")
 check("状态按钮文案", manager.state_move_button.text() == "移动模式" and manager.state_fixed_button.text() == "固定模式")
+check("默认流程设置项", overlay.unscaled_settings.default_build_order == "新手全流程（不拉野）")
+if any(bo.get("name") == "新手全流程（不拉野）" for bo in overlay.build_orders):
+    check("默认流程自动启用", overlay.selected_build_order_name == "新手全流程（不拉野）",
+          f"实际: {overlay.selected_build_order_name}")
+    # R6 要点提取（真实数据：此时选中的就是默认流程）
+    hl = overlay.get_build_order_highlights()
+    check("要点提取-结构", "units" in hl and "techs" in hl)
+    check("要点提取-排除资源/动物/时代", all(
+        ("/resource/" not in x["icon"]) and ("/animal/" not in x["icon"]) and ("/age/" not in x["icon"])
+        for x in hl["units"] + hl["techs"]))
+    if game_key == "aoe2":  # 分类表本期仅 AoE2 提供，其他游戏要点为空属预期
+        check("要点提取-有内容", len(hl["units"]) + len(hl["techs"]) > 0,
+              f"units={len(hl['units'])} techs={len(hl['techs'])}")
+else:
+    print("  INFO 用户数据中暂无该名称流程，跳过自动启用断言（机制由下方功能测试覆盖）")
 
 # --- 2. 便携式配置 + 迁移 + 导入（写入临时目录，不动用户真实配置）
 check("便携式配置目录", "local_config" in overlay.directory_config_rts_overlay, overlay.directory_config_rts_overlay)
@@ -130,19 +145,18 @@ if len(overlay.build_orders) > 0:
     app.processEvents()
     check("搜索结果列表", len(manager.last_valid_names) > 0, f"names={manager.last_valid_names}")
     if len(manager.last_valid_names) > 0:
-        manager.on_result_clicked(manager.results_list.item(0))
+        target_row = next((i for i in range(manager.results_list.count())
+                           if manager.results_list.item(i).text() == "新手全流程（不拉野）"), 0)
+        manager.on_result_clicked(manager.results_list.item(target_row))
         app.processEvents()
         check("选择建造顺序", overlay.selected_build_order is not None)
 
-        # R6 要点提取
-        hl = overlay.get_build_order_highlights()
-        check("要点提取-结构", "units" in hl and "techs" in hl)
-        check("要点提取-排除资源/动物/时代", all(
-            ("/resource/" not in x["icon"]) and ("/animal/" not in x["icon"]) and ("/age/" not in x["icon"])
-            for x in hl["units"] + hl["techs"]))
-        if game_key == "aoe2":  # 分类表本期仅 AoE2 提供，其他游戏要点为空属预期
-            check("要点提取-有内容", len(hl["units"]) + len(hl["techs"]) > 0,
-                  f"units={len(hl['units'])} techs={len(hl['techs'])}")
+        # 默认流程机制：把设置指向第一个流程，验证自动选择
+        overlay.unscaled_settings.default_build_order = first_bo.get("name")
+        ok = overlay.select_default_build_order()
+        check("默认流程机制", ok and overlay.selected_build_order_name == first_bo.get("name"),
+              f"selected={overlay.selected_build_order_name}")
+        overlay.unscaled_settings.default_build_order = "新手全流程（不拉野）"  # 还原
         # R6 "流程要点"按钮（回归：按钮传参 bug 曾导致闪退）
         manager.highlights_button.button.click() if hasattr(manager.highlights_button, "button") else manager.highlights_button.click()
         app.processEvents()

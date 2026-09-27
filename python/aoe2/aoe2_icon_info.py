@@ -17,6 +17,8 @@ AOE2_ICON_INFO = {
     "Bombard_cannon_aoe2DE": {"type": "unit", "name": "巨型投石机"},
     "Skirmisher_aoe2DE": {"type": "unit", "name": "掷矛兵"},
     "Steppelancericon": {"type": "unit", "name": "草原枪兵"},
+    "Battering_ram_aoe2DE": {"type": "unit", "name": "冲撞车"},
+    "Heavyscorpion_aoe2DE": {"type": "unit", "name": "重型弩炮"},
     # --- 科技 ---
     "BloodlinesDE": {"type": "tech", "name": "血统"},
     "FletchingDE": {"type": "tech", "name": "箭羽"},
@@ -34,6 +36,8 @@ AOE2_ICON_INFO = {
     "Ballistics_aoe2DE": {"type": "tech", "name": "弹道学"},
     "Chemistry_aoe2DE": {"type": "tech", "name": "化学"},
     "CoinageDE": {"type": "tech", "name": "铸币"},
+    "PlateBardingArmorDE": {"type": "tech", "name": "骑兵板甲"},
+    "ChainBardingArmorDE": {"type": "tech", "name": "骑兵锁甲"},
     # --- 建筑本体（排除，不进入流程要点）---
     "Mill_aoe2de": {"type": "building", "name": "磨坊"},
     "Lumber_camp_aoe2de": {"type": "building", "name": "伐木场"},

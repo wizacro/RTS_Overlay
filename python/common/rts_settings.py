@@ -134,6 +134,7 @@ class RTSOverlaySettings(SettingsSubclass):
 
         # manager window
         self.manager_theme: str = 'light'  # manager UI theme ('light' or 'dark')
+        self.default_build_order: str = '新手全流程（不拉野）'  # build order auto-selected at startup (if present)
 
         # panel to configure the hotkeys
         self.panel_hotkeys: RTSHotkeysConfigurationLayout = RTSHotkeysConfigurationLayout()

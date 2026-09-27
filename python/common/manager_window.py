@@ -706,7 +706,7 @@ class ManagerWindow(QMainWindow):
         if names:
             for index, name in enumerate(names):
                 item = QListWidgetItem(name)
-                if index == self.overlay.build_order_selection_id:
+                if name == self.overlay.selected_build_order_name:
                     font = item.font()
                     font.setBold(True)
                     item.setFont(font)

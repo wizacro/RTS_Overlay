@@ -345,6 +345,9 @@ class RTSGameOverlay(QMainWindow):
         # initialization done
         self.init_done = True
 
+        # auto-select the default build order (settings), if present
+        self.select_default_build_order()
+
     def reload(self, update_settings):
         """Reload the application settings, build orders...
 
@@ -448,6 +451,9 @@ class RTSGameOverlay(QMainWindow):
 
         # keyboard and mouse global hotkeys
         self.set_keyboard_mouse()
+
+        # re-apply the default build order after the reload reset
+        self.select_default_build_order()
 
         # re-initialization done
         self.init_done = True
@@ -642,6 +648,39 @@ class RTSGameOverlay(QMainWindow):
                         {'stem': stem, 'name': name, 'icon': icon_path}
                     )
         return highlights
+
+    def select_default_build_order(self) -> bool:
+        """Auto-select the default build order (settings 'default_build_order'), if present.
+
+        Returns
+        -------
+        True if a default build order was found and selected.
+        """
+        default_name = getattr(self.unscaled_settings, 'default_build_order', '')
+        if not default_name:
+            return False
+        match = next((bo for bo in self.build_orders if bo.get('name') == default_name), None)
+        if match is None or 'build_order' not in match:
+            return False
+
+        self.selected_build_order_name = default_name
+        self.selected_build_order = match
+        self.selected_build_order_step_id = 0
+        self.selected_build_order_step_count = len(match['build_order'])
+
+        # timer preparation (same as select_build_order)
+        if self.build_order_timer['available']:
+            self.build_order_timer['steps'] = get_build_order_timer_steps(match)
+            if not self.build_order_timer['steps']:
+                self.deactivate_timer()
+            else:
+                self.build_order_timer['steps_ids'] = [0]
+                self.build_order_timer['last_steps_ids'] = []
+                self.reset_build_order_timer()
+                self.start_stop_build_order_timer(invert_run=False, run_value=False)
+
+        self.update_build_order()  # display it (both states)
+        return True
 
     def get_filter_specs(self):
         """Get the faction filter specifications for the manager window.
