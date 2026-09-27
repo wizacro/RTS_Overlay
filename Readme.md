@@ -206,6 +206,7 @@ RTS Overlay 不会与游戏本身交互（不分析屏幕画面，也不进行�
 * **源码版（本中文版）**：
     * 悬浮窗已启动但看不到：可能是位置在屏幕外，检查设置文件（*C:\Users\你的用户名\AppData\Local\RTS_Overlay\对应游戏\settings\*）中的位置参数；或先在管理器关闭再重新开启悬浮窗。
     * 全局快捷键失效：确认使用了 Python 3.8 环境（新版 Python 与 pynput 不兼容）。
+* **首次运行 EXE 提示"Windows 已保护你的电脑"**：这是 SmartScreen 对无数字签名程序的常规拦截（原项目 EXE 同样如此，并非报毒）。点击"更多信息"→"仍要运行"即可，只会拦截第一次；或解压前先右键 zip → 属性 → 勾选"解除锁定"。
     * 更多问题可在 [原项目 Issues](https://github.com/CraftySalamander/RTS_Overlay/issues) 提交（英文），或在本 fork 的 Issues 提交（中文）。
 
 
