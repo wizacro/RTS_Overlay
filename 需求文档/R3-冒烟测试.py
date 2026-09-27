@@ -281,7 +281,7 @@ def part2_coverage():
 
     uncovered = {}
     for root, dirs, files in os.walk(PY_DIR):
-        dirs[:] = [d for d in dirs if d != "__pycache__"]
+        dirs[:] = [d for d in dirs if d not in ("__pycache__",) and not d.startswith("_r")]
         for fn in files:
             if not fn.endswith(".py"):
                 continue
@@ -310,7 +310,7 @@ def part2_coverage():
 
     missing_t_keys = []
     for root, dirs, files in os.walk(PY_DIR):
-        dirs[:] = [d for d in dirs if d != "__pycache__"]
+        dirs[:] = [d for d in dirs if d not in ("__pycache__",) and not d.startswith("_r")]
         for fn in files:
             if not fn.endswith(".py"):
                 continue

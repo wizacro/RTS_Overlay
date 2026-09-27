@@ -243,19 +243,9 @@ class ManagerWindow(QMainWindow):
         layout = QVBoxLayout(tab)
         pictures = self.overlay.directory_common_pictures
 
-        # --- game selection (switching games rebuilds the content and the overlay)
-        game_row = QHBoxLayout()
-        game_row.addWidget(QLabel(t('Game')))
-        self.game_combo = QComboBox()
-        for game_key, spec in GAME_REGISTRY.items():
-            self.game_combo.addItem(spec['display_name'], game_key)
-        self.game_combo.setCurrentIndex(list(GAME_REGISTRY.keys()).index(self.overlay.name_game))
-        self.game_combo.currentIndexChanged.connect(self.on_game_changed)
-        game_row.addWidget(self.game_combo)
-        game_row.addStretch()
-        layout.addLayout(game_row)
-
         # --- find build orders (count for the selected game + website button)
+        # 注：游戏切换下拉暂未开放（当前聚焦帝国时代2，其余游戏列入路线图）；
+        # switch_game/GAME_REGISTRY 能力保留在代码中，未来完善后恢复入口。
         find_section = QHBoxLayout()
         find_section.addWidget(QLabel(t('Find build orders')))
         self.bo_count_label = QLabel()
@@ -296,14 +286,6 @@ class ManagerWindow(QMainWindow):
         layout.addWidget(QLabel(t('The build order is read from the clipboard; if the name field is empty, the name inside the build order is used.')))
         layout.addStretch(2)
         return tab
-
-    def on_game_changed(self):
-        """Switch the managed game (rebuild the overlay and the manager content)."""
-        if self.updating_ui:
-            return
-        game_key = self.game_combo.currentData()
-        if game_key and (game_key != self.overlay.name_game):
-            self.switch_game(game_key)
 
     def open_build_order_website(self):
         """Open the build order website of the selected game."""
@@ -754,30 +736,21 @@ class ManagerWindow(QMainWindow):
     # --------------------------------------------------- overlay controls
 
     def toggle_overlay(self):
-        """Show/hide the overlay window (highlights window shown first when a build order is selected)."""
+        """Show/hide the overlay window; the highlights window (if a build order is
+        selected) opens alongside it - the two windows are closed independently."""
         if self.overlay.overlay_visible():
             self.overlay.close_overlay()
-        elif self.overlay.selected_build_order is not None:
-            self.show_highlights_window(start_overlay=True)
         else:
             self.overlay.open_overlay()
+            if self.overlay.selected_build_order is not None:
+                self.show_highlights_window()
         self.update_overlay_controls()
         self.update_guide()
 
-    def _open_overlay_after_highlights(self):
-        """Called when the highlights window closes: open the overlay if requested."""
-        if getattr(self, '_highlights_start_overlay', False):
-            self._highlights_start_overlay = False
-            self.overlay.open_overlay()
-        self.update_overlay_controls()
-        self.update_guide()
-
-    def show_highlights_window(self, start_overlay: bool = False):
+    def show_highlights_window(self):
         """Show the build order highlights window (units and technologies)."""
         bo = self.overlay.selected_build_order
         if bo is None or 'build_order' not in bo:
-            if start_overlay:
-                self.toggle_overlay()
             return
 
         highlights = self.overlay.get_build_order_highlights()
@@ -826,14 +799,12 @@ class ManagerWindow(QMainWindow):
 
         buttons = QHBoxLayout()
         buttons.addStretch()
-        close_button = QPushButton(t('Start game, close'))
+        close_button = QPushButton(t('Close'))
         close_button.setObjectName('primaryBtn')
         close_button.clicked.connect(dialog.accept)
         buttons.addWidget(close_button)
         layout.addLayout(buttons)
 
-        self._highlights_start_overlay = start_overlay
-        dialog.finished.connect(self._open_overlay_after_highlights)
         self._highlights_dialog = dialog
         dialog.show()
 
