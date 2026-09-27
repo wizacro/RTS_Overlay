@@ -180,6 +180,19 @@ check("快捷键折叠项", hasattr(manager, "hotkeys_header") and hasattr(manag
 manager.toggle_overlay()
 app.processEvents()
 
+# 锁形按钮：显示当前状态图标，点击切换移动/固定
+check("锁按钮存在", overlay.build_order_lock_button is not None)
+check("锁按钮初始为解锁图标", "lock_open" in manager.overlay.images.lock_open)
+panel_before = overlay.selected_panel
+overlay.build_order_lock_button.button.click()
+app.processEvents()
+check("锁按钮点击切换状态", overlay.selected_panel != panel_before)
+icon_after_open = overlay.build_order_lock_button.button.icon().isNull() is False
+check("锁按钮图标有效", icon_after_open)
+overlay.build_order_lock_button.button.click()
+app.processEvents()
+check("锁按钮再次点击切回", overlay.selected_panel == panel_before)
+
 # --- 5. 状态切换（移动 <-> 固定）
 from common.rts_overlay import PanelID
 check("默认移动模式", overlay.selected_panel == PanelID.CONFIG)

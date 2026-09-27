@@ -168,6 +168,7 @@ TRANSLATIONS = {
     'No build order selected.': '未选择建造顺序。',
     'Click twice to hide': '连点两次隐藏悬浮窗',
     'Click again to hide': '再点一次确认隐藏',
+    'Click to switch between move and fixed modes': '点击切换 移动模式/固定模式',
     'HOW_TO_USE_TEXT':
         '使用说明：\n\n'
         '1. 导入建造顺序（"导入"标签页：从剪贴板导入，可先填流程名称）。\n'

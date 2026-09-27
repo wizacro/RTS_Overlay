@@ -19,3 +19,5 @@ class RTSOverlayImages:
         self.start_stop_timer: str = 'action_button/start_stop.webp'  # start/stop the build order timer
         self.start_stop_timer_active: str = 'action_button/start_stop_active.webp'
         self.reset_timer: str = 'action_button/timer_0.webp'  # reset the build order timer
+        self.lock_closed: str = 'action_button/lock_closed.png'  # overlay in the fixed (locked) state
+        self.lock_open: str = 'action_button/lock_open.png'  # overlay in the move (unlocked) state

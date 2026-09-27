@@ -286,6 +286,16 @@ class RTSGameOverlay(QMainWindow):
             tooltip='Click twice to hide',
         )
 
+        # lock button: shows the current overlay state (locked = fixed, unlocked = move), click to toggle
+        self.build_order_lock_button = TwinHoverButton(
+            parent=self,
+            click_connect=self.next_panel,
+            icon=QIcon(os.path.join(self.directory_common_pictures, images.lock_open)),
+            button_qsize=action_button_qsize,
+            tooltip='Click to switch between move and fixed modes',
+        )
+        self.update_lock_button_icon()
+
         # select the next build order (global shortcut, works with the manager search results)
         hotkeys = self.settings.hotkeys
         self.hotkey_next_build_order = QShortcut(QKeySequence(hotkeys.select_next_build_order), self)
@@ -411,6 +421,8 @@ class RTSGameOverlay(QMainWindow):
         if self.build_order_start_stop_timer is not None:
             self.update_build_order_start_stop_timer_icon()
 
+        self.update_lock_button_icon()  # lock icon follows the current overlay state
+
         # keyboard and mouse global hotkeys
         self.set_keyboard_mouse()
 
@@ -426,6 +438,17 @@ class RTSGameOverlay(QMainWindow):
         )
 
         self.build_order_start_stop_timer.update_icon_size(
+            QIcon(os.path.join(self.directory_common_pictures, selected_image)), action_button_qsize
+        )
+
+    def update_lock_button_icon(self):
+        """Update the lock button icon to reflect the current overlay state
+        (closed lock = fixed mode, open lock = move mode)."""
+        images = self.images
+        action_button_qsize = QSize(self.settings.layout.action_button_size, self.settings.layout.action_button_size)
+        selected_image = images.lock_closed if (self.selected_panel == PanelID.BUILD_ORDER) else images.lock_open
+
+        self.build_order_lock_button.update_icon_size(
             QIcon(os.path.join(self.directory_common_pictures, selected_image)), action_button_qsize
         )
 
@@ -631,6 +654,9 @@ class RTSGameOverlay(QMainWindow):
             Qt.WA_TransparentForMouseEvents, self.selected_panel != PanelID.CONFIG
         )
 
+        # lock button icon follows the current state
+        self.update_lock_button_icon()
+
         # remove the window title and stay always on top
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
 
@@ -665,6 +691,7 @@ class RTSGameOverlay(QMainWindow):
         if self.build_order_start_stop_timer is not None:
             self.build_order_start_stop_timer.close()
         self.build_order_hide_button.close()
+        self.build_order_lock_button.close()
 
         if (self.panel_config_hotkeys is not None) and self.panel_config_hotkeys.isVisible():
             self.panel_config_hotkeys.close()
@@ -798,6 +825,7 @@ class RTSGameOverlay(QMainWindow):
         if (not self.hidden) and self.is_mouse_in_window():
             self.build_order_previous_button.hovering_show(self.is_mouse_in_roi_widget)
             self.build_order_next_button.hovering_show(self.is_mouse_in_roi_widget)
+            self.build_order_lock_button.hovering_show(self.is_mouse_in_roi_widget)
             if self.build_order_timer['available'] and self.build_order_timer['steps']:
                 self.build_order_start_stop_timer.hovering_show(self.is_mouse_in_roi_widget)
 
@@ -1161,6 +1189,7 @@ class RTSGameOverlay(QMainWindow):
         if self.build_order_start_stop_timer is not None:
             self.build_order_start_stop_timer.hide()
         self.build_order_hide_button.hide()
+        self.build_order_lock_button.hide()
 
         # display build order
         self.build_order_resources.hide()
@@ -1298,6 +1327,7 @@ class RTSGameOverlay(QMainWindow):
         self.build_order_notes.show()
         if self.show_resources:
             self.build_order_resources.show()
+        self.build_order_lock_button.show()  # mode switch: available in both states
         if self.selected_build_order is not None:
             self.build_order_step_time.show()
             self.build_order_previous_button.show()
@@ -1332,7 +1362,7 @@ class RTSGameOverlay(QMainWindow):
             next_y += self.build_order_resources.row_total_height + vertical_spacing
 
         # maximum width
-        buttons_count = 3  # previous step + next step + hide button
+        buttons_count = 4  # previous step + next step + hide button + lock button
         show_start_stop = (
             self.build_order_start_stop_timer is not None
             and self.build_order_timer['available']
@@ -1361,8 +1391,11 @@ class RTSGameOverlay(QMainWindow):
 
         button_space_size = action_button_size + action_button_spacing
 
-        # buttons at the right edge (from right to left: next, previous, start/stop timer, hide)
+        # buttons at the right edge (from right to left: lock, next, previous, start/stop timer, hide)
         next_x = self.width() - border_size - action_button_size
+        self.build_order_lock_button.move(next_x, border_size)
+
+        next_x -= button_space_size
         self.build_order_next_button.move(next_x, border_size)
 
         next_x -= button_space_size
