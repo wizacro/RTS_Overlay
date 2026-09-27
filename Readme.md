@@ -36,7 +36,7 @@ RTS Overlay 不会与游戏本身交互（不分析屏幕画面，也不进行�
     * **移动模式**：整窗可拖动，用于把悬浮窗摆到游戏中合适的位置；也可以先点按钮预览流程。
     * **固定模式**：不可拖动，只有按钮可以点击，其余区域点击穿透直达游戏——进游戏后使用。
 
-![管理器·导入页](/readme/manager_import.png)
+![管理器·导入页](/readme/manager_import.jpg)
 
 ![管理器·展示页](/readme/manager_display.png)
 
