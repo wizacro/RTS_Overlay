@@ -87,6 +87,7 @@ QTabBar::tab:selected { background: #ffffff; color: #14406e; font-weight: bold; 
 QSlider::groove:horizontal { height: 4px; background: #bbbbbb; border-radius: 2px; }
 QSlider::handle:horizontal { width: 12px; margin: -5px 0px; border-radius: 6px; background: #555555; }
 QMessageBox { background-color: #f5f5f5; }
+QLabel#selectHint { font-size: 18px; font-weight: bold; color: #14406e; }
 """
 
 DARK_QSS = """
@@ -110,6 +111,7 @@ QTabBar::tab:selected { background: #1e1e1e; color: #ffffff; font-weight: bold; 
 QSlider::groove:horizontal { height: 4px; background: #555555; border-radius: 2px; }
 QSlider::handle:horizontal { width: 12px; margin: -5px 0px; border-radius: 6px; background: #cccccc; }
 QMessageBox { background-color: #1e1e1e; }
+QLabel#selectHint { font-size: 18px; font-weight: bold; color: #ffffff; }
 """
 
 
@@ -362,8 +364,10 @@ class ManagerWindow(QMainWindow):
         layout = QVBoxLayout(tab)
         pictures = self.overlay.directory_common_pictures
 
-        # --- reminder at the top
-        layout.addWidget(QLabel(t('Select a build order')))
+        # --- reminder at the top (large and bold)
+        select_label = QLabel(t('Select a build order'))
+        select_label.setObjectName('selectHint')
+        layout.addWidget(select_label)
 
         # --- selection (filter combos are inserted by 'refresh_filter_combos')
         selection_row = QHBoxLayout()
