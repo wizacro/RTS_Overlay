@@ -36,13 +36,16 @@ RTS Overlay 不会与游戏本身交互（不分析屏幕画面，也不进行�
     * **移动模式**：整窗可拖动，用于把悬浮窗摆到游戏中合适的位置；也可以先点按钮预览流程。
     * **固定模式**：不可拖动，只有按钮可以点击，其余区域点击穿透直达游戏——进游戏后使用。
 
-![管理器·导入页](/readme/manager_import.jpg)
-
-![管理器·展示页](/readme/manager_display.png)
-
-![悬浮窗·移动模式](/readme/overlay_move_mode.png)
-
-![悬浮窗·固定模式](/readme/overlay_fixed_mode.png)
+<table>
+  <tr>
+    <td align="center"><img src="/readme/manager_import.jpg" alt="管理器·导入页" width="420"/><br/><sub>管理器 · 导入页</sub></td>
+    <td align="center"><img src="/readme/manager_display.png" alt="管理器·展示页" width="420"/><br/><sub>管理器 · 展示页</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="/readme/overlay_move_mode.png" alt="悬浮窗·移动模式" width="420"/><br/><sub>悬浮窗 · 移动模式</sub></td>
+    <td align="center"><img src="/readme/overlay_fixed_mode.png" alt="悬浮窗·固定模式" width="420"/><br/><sub>悬浮窗 · 固定模式</sub></td>
+  </tr>
+</table>
 
 
 # 快速上手
