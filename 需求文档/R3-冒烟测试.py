@@ -79,7 +79,7 @@ def close_highlights_if_any():
         app.processEvents()
 
 # --- 1. 双窗构建与文案
-check("管理器标题", manager.windowTitle() == "RTS Overlay 管理器", manager.windowTitle())
+check("管理器标题", manager.windowTitle() == "帝国小抄 · RTS Overlay 中文版", manager.windowTitle())
 check("悬浮窗标题", overlay.windowTitle() == expected_title, overlay.windowTitle())
 check("悬浮窗初始隐藏", not overlay.overlay_visible())
 check("开启按钮文案", manager.overlay_toggle_button.text() == "开启悬浮窗", manager.overlay_toggle_button.text())

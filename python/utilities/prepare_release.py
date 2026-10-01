@@ -14,7 +14,7 @@ def compile_clean(name_game: str, disable_console: bool = True, finalize_folder:
     finalize_folder    True to finalize the folder (copy additional files, zip, clean).
     """
     name_main_file = 'main_' + name_game  # name of the main python file (without path & extension)
-    name_out_lib = name_game + '_overlay'  # name of the output library
+    name_out_lib = name_game + '_overlay_cn'  # name of the output library (_cn = Chinese fork)
 
     # create output folders (exe at the tool root, for easy access)
     overlay_folder = name_out_lib

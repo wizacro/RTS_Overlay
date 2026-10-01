@@ -107,7 +107,7 @@ TRANSLATIONS = {
     'No valid build order found with these keywords.': '未找到符合这些关键词的建造顺序。',
 
     # --- R3 管理器窗口（manager_window.py）---
-    'RTS Overlay Manager': 'RTS Overlay 管理器',
+    'RTS Overlay Manager': '帝国小抄 · RTS Overlay 中文版',
     '1. Import build orders': '① 导入建造顺序',
     '2. Select and configure': '② 选择与配置',
     '3. Show the overlay': '③ 开启悬浮窗',
