@@ -149,8 +149,8 @@ class RTSGameOverlay(QMainWindow):
 
             self.screen_position_safety()
 
-            # save the settings
-            self.save_settings()
+            # save the settings (silent: a popup at every first launch is unnecessary)
+            self.save_settings(quiet=True)
 
         # scaling the settings
         self.settings = deepcopy(self.unscaled_settings)
@@ -1016,16 +1016,22 @@ class RTSGameOverlay(QMainWindow):
         self.set_keyboard_mouse()
         self.save_settings()
 
-    def save_settings(self):
-        """Save the settings."""
+    def save_settings(self, quiet: bool = False):
+        """Save the settings.
+
+        Parameters
+        ----------
+        quiet   True to skip the confirmation popup (e.g. first-run auto-save).
+        """
         msg_text = f'Settings saved in {self.settings_file}.'  # message to display
         os.makedirs(os.path.dirname(self.settings_file), exist_ok=True)
         with open(self.settings_file, 'w') as f:
             f.write(json.dumps(self.unscaled_settings.to_dict(), sort_keys=False, indent=4))
             print(msg_text)
 
-        # open popup message
-        popup_message('RTS Overlay - Settings saved', msg_text)
+        # open popup message (only for deliberate user actions)
+        if not quiet:
+            popup_message('RTS Overlay - Settings saved', msg_text)
 
     def update_mouse(self):
         """Update the mouse position."""
