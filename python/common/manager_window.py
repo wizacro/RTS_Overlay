@@ -556,7 +556,6 @@ class ManagerWindow(QMainWindow):
             with open(filepath, 'w', encoding='utf-8') as f:
                 f.write(json.dumps(json_data, ensure_ascii=False, indent=4))
 
-            self.show_message(t('Success'), t('Build order saved as') + f": {filename}")
             self.overlay.reload(update_settings=False)  # reload build orders
             self.update_bo_count()
             self.refresh_results()

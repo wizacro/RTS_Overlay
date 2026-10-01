@@ -1016,7 +1016,7 @@ class RTSGameOverlay(QMainWindow):
         self.set_keyboard_mouse()
         self.save_settings()
 
-    def save_settings(self, quiet: bool = False):
+    def save_settings(self, quiet: bool = True):
         """Save the settings.
 
         Parameters
