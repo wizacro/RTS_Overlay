@@ -55,3 +55,26 @@ AOE2_ICON_INFO = {
     "Palisade_wall_aoe2de": {"type": "building", "name": "木墙"},
     "Tower_aoe2de": {"type": "building", "name": "塔"},
 }
+
+
+# buildorderguide.com 新版导出的裸标识符兼容表（无 @ 包裹、驼峰命名）
+# 值为渲染行片段：@图标@ / 图标+文字+图标 可自由组合；渲染器会自动匹配 webp/png/jpg
+AOE2_NOTE_TOKEN_COMPAT = {
+    "foodUnderTC": "@resource/Aoe2de_food@ under @town_center/Towncenter_aoe2DE@",
+    "woodUnderTC": "@resource/Aoe2de_wood@ under @town_center/Towncenter_aoe2DE@",
+    "stragglerTree": "@resource/tree@",
+    "feudalAge": "@age/FeudalAgeIconDE@",
+    "castleAge": "@age/CastleAgeIconDE@",
+    "darkAge": "@age/DarkAgeIconDE@",
+    "imperialAge": "@age/ImperialAgeIconDE@",
+    "doubleBitAxe": "@lumber_camp/DoubleBitAxe_aoe2de@",
+    "goldShaftMining": "@mining_camp/GoldShaftMiningDE@",
+    "horseCollar": "@mill/HorseCollarDE@",
+    "loom": "@town_center/LoomDE@",
+    "wheelbarrow": "@mill/WheelbarrowDE@",
+    "bloodlines": "@stable/BloodlinesDE@",
+    "fletching": "@blacksmith/FletchingDE@",
+    "forging": "@blacksmith/Forging_aoe2de@",
+    "barracks": "@barracks/Barracks_aoe2DE@",
+    "stable": "@stable/Stable_aoe2DE@",
+}

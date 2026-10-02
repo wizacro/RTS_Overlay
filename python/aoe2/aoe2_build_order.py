@@ -1,6 +1,36 @@
 import math
+import re
+
 from aoe2.aoe2_civ_icon import aoe2_civilization_icon
+from aoe2.aoe2_icon_info import AOE2_NOTE_TOKEN_COMPAT
 from common.build_order_tools import check_valid_faction, FieldDefinition, check_valid_steps
+
+
+
+def normalize_buildorderguide_notes(build_order: list) -> None:
+    """Normalize notes from buildorderguide.com's newer export format.
+
+    The site's newer exports use bare camelCase identifiers (e.g. 'foodUnderTC',
+    'feudalAge') instead of '@image/path@' markers for some entries. Known
+    identifiers are replaced in place with the corresponding '@icon@' fragments
+    so the overlay renders them like any other icon. Unknown text is untouched.
+    """
+    if not AOE2_NOTE_TOKEN_COMPAT:
+        return
+    pattern = re.compile(
+        r"\b(" + "|".join(re.escape(token) for token in sorted(AOE2_NOTE_TOKEN_COMPAT, key=len, reverse=True)) + r")\b"
+    )
+
+    def _replace(match: "re.Match") -> str:
+        return AOE2_NOTE_TOKEN_COMPAT[match.group(1)]
+
+    for step in build_order:
+        notes = step.get("notes")
+        if not notes:
+            continue
+        step["notes"] = [
+            pattern.sub(_replace, note) if isinstance(note, str) else note for note in notes
+        ]
 
 
 def check_valid_aoe2_build_order(data: dict, bo_name_msg: bool = False) -> (bool, str):

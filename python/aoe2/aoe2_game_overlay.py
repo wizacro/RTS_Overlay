@@ -7,7 +7,7 @@ from common.rts_overlay import RTSGameOverlay, scale_list_int
 from common.rts_overlay_images import RTSOverlayImages
 
 from aoe2.aoe2_settings import AoE2OverlaySettings
-from aoe2.aoe2_build_order import check_valid_aoe2_build_order, aoe2_build_order_sorting
+from aoe2.aoe2_build_order import check_valid_aoe2_build_order, aoe2_build_order_sorting, normalize_buildorderguide_notes
 from aoe2.aoe2_civ_icon import aoe2_civilization_icon, get_aoe2_faction_selection
 from aoe2.aoe2_icon_info import AOE2_ICON_INFO
 
@@ -71,6 +71,7 @@ class AoE2GameOverlay(RTSGameOverlay):
 
         # sort build orders
         self.build_orders.sort(key=aoe2_build_order_sorting)
+        normalize_buildorderguide_notes(self.build_orders)
 
         self.update_panel_elements()  # update the current panel elements
 
@@ -85,6 +86,7 @@ class AoE2GameOverlay(RTSGameOverlay):
 
         # sort build orders
         self.build_orders.sort(key=aoe2_build_order_sorting)
+        normalize_buildorderguide_notes(self.build_orders)
 
         self.update_panel_elements()  # update the current panel elements
 
