@@ -1,3 +1,4 @@
+import html
 import math
 import re
 
@@ -28,6 +29,8 @@ def normalize_buildorderguide_notes(build_order: list) -> None:
         notes = step.get("notes")
         if not notes:
             continue
+        # HTML 转义还原（&gt; → > 等）：部分流程编辑器/网站导出时会转义特殊字符
+        notes = [html.unescape(note) if isinstance(note, str) else note for note in notes]
         step["notes"] = [
             pattern.sub(_replace, note) if isinstance(note, str) else note for note in notes
         ]
