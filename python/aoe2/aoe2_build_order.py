@@ -8,13 +8,16 @@ from common.build_order_tools import check_valid_faction, FieldDefinition, check
 
 
 
-def normalize_buildorderguide_notes(build_order: list) -> None:
+def normalize_buildorderguide_notes(build_orders: list) -> None:
     """Normalize notes from buildorderguide.com's newer export format.
 
-    The site's newer exports use bare camelCase identifiers (e.g. 'foodUnderTC',
-    'feudalAge') instead of '@image/path@' markers for some entries. Known
-    identifiers are replaced in place with the corresponding '@icon@' fragments
-    so the overlay renders them like any other icon. Unknown text is untouched.
+    Iterates build order dicts (self.build_orders), walking each BO's
+    'build_order' step list to normalize note strings in place.
+
+    Parameters
+    ----------
+    build_orders   List of build order dicts, each with a 'build_order' key
+                   containing the list of step dicts.
     """
     if not AOE2_NOTE_TOKEN_COMPAT:
         return
@@ -22,18 +25,19 @@ def normalize_buildorderguide_notes(build_order: list) -> None:
         r"\b(" + "|".join(re.escape(token) for token in sorted(AOE2_NOTE_TOKEN_COMPAT, key=len, reverse=True)) + r")\b"
     )
 
-    def _replace(match: "re.Match") -> str:
+    def _replace(match):
         return AOE2_NOTE_TOKEN_COMPAT[match.group(1)]
 
-    for step in build_order:
-        notes = step.get("notes")
-        if not notes:
-            continue
-        # HTML 转义还原（&gt; → > 等）：部分流程编辑器/网站导出时会转义特殊字符
-        notes = [html.unescape(note) if isinstance(note, str) else note for note in notes]
-        step["notes"] = [
-            pattern.sub(_replace, note) if isinstance(note, str) else note for note in notes
-        ]
+    for bo in build_orders:
+        for step in bo.get("build_order", []):
+            notes = step.get("notes")
+            if not notes:
+                continue
+            # HTML 转义还原（&gt; → > 等）：部分流程编辑器/网站导出时会转义特殊字符
+            notes = [html.unescape(note) if isinstance(note, str) else note for note in notes]
+            step["notes"] = [
+                pattern.sub(_replace, note) if isinstance(note, str) else note for note in notes
+            ]
 
 
 def check_valid_aoe2_build_order(data: dict, bo_name_msg: bool = False) -> (bool, str):
