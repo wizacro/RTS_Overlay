@@ -28,6 +28,17 @@ def normalize_buildorderguide_notes(build_orders: list) -> None:
     def _replace(match):
         return AOE2_NOTE_TOKEN_COMPAT[match.group(1)]
 
+    def _normalize_note_segments(note):
+        """Apply token replacement only to @-marker-free segments."""
+        parts = note.split("@")
+        result = []
+        for i, part in enumerate(parts):
+            if i % 2 == 0:  # outside @...@ markers
+                result.append(pattern.sub(_replace, part))
+            else:
+                result.append(part)  # inside @...@ markers, leave as-is
+        return "@".join(result)
+
     for bo in build_orders:
         for step in bo.get("build_order", []):
             notes = step.get("notes")
@@ -35,8 +46,9 @@ def normalize_buildorderguide_notes(build_orders: list) -> None:
                 continue
             # HTML 转义还原（&gt; → > 等）：部分流程编辑器/网站导出时会转义特殊字符
             notes = [html.unescape(note) if isinstance(note, str) else note for note in notes]
+            # 兼容替换只作用于 @...@ 标记外的文本，避免破坏图标路径
             step["notes"] = [
-                pattern.sub(_replace, note) if isinstance(note, str) else note for note in notes
+                _normalize_note_segments(note) if isinstance(note, str) else note for note in notes
             ]
 
 
